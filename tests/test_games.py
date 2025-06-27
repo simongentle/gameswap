@@ -51,11 +51,11 @@ def test_create_game(test_db) -> None:
     )
 
 
-# def test_game_not_exists():
-#     response = client.get(f"/games/{0}")
-#     assert response.status_code == 404, response.text
+def test_get_game_not_exists(test_db):
+    response = client.get(f"/games/{0}")
+    assert response.status_code == 404, response.text
 
 
-# def test_delete_game_not_exists():
-#     response = client.delete(f"/games/{0}")
-#     assert response.status_code == 404, response.text
+def test_delete_game_not_exists(test_db):
+    response = client.delete(f"/games/{0}")
+    assert response.status_code == 404, response.text

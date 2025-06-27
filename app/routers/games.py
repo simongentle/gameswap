@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 import app.crud.games as games
@@ -20,15 +20,24 @@ def get_games(session: Session = Depends(get_db_session)) -> list[Game]:
 
 
 @router.get("/games/{game_id}", response_model=Game) 
-def get_game(game_id: int, session) -> Game:
-    return games.get_game(session, game_id)
+def get_game(game_id: int, session: Session = Depends(get_db_session)) -> Game:
+    try:
+        return games.get_game(session, game_id)
+    except games.NotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
 
 
 @router.patch("/games/{game_id}", response_model=Game)
 def update_game(game_id: int, params: GameUpdate, session: Session = Depends(get_db_session)) -> Game:
-    return games.update_game(session, game_id, params)
+    try:
+        return games.update_game(session, game_id, params)
+    except games.NotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
 
 
 @router.delete("/games/{game_id}", response_model=Game) 
 def delete_game(game_id: int, session: Session = Depends(get_db_session)) -> Game:
-    return games.delete_game(session, game_id)
+    try:
+        return games.delete_game(session, game_id)
+    except games.NotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
