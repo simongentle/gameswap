@@ -11,7 +11,10 @@ router = APIRouter()
 
 @router.post("/games", response_model=Game)
 def create_game(game: GameCreate, session: Session = Depends(get_db_session)) -> Game:
-    return games.create_game(session, game)
+    try:
+        return games.create_game(session, game)
+    except games.DuplicateGameError as exc:
+        raise HTTPException(status_code=409) from exc
 
 
 @router.get("/games", response_model=list[Game]) 

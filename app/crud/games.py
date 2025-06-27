@@ -1,10 +1,15 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.models.game import Game as DBGame
 from app.schemas.game import Game, GameCreate, GameUpdate
 
 
 class NotFoundError(Exception):
+    pass
+
+
+class DuplicateGameError(Exception):
     pass
 
 
@@ -22,11 +27,15 @@ def get_games(session: Session) -> list[Game]:
 
 def create_game(session: Session, params: GameCreate) -> Game:
     game = DBGame(**params.model_dump())
-    session.add(game)
-    session.commit()
-    session.refresh(game)
-    return game
-
+    try:
+        session.add(game)
+        session.commit()
+        session.refresh(game)
+        return game
+    except IntegrityError as exc:
+        session.rollback()
+        raise DuplicateGameError from exc
+    
 
 def update_game(session: Session, game_id: int, params: GameUpdate) -> Game:
     game = session.get(DBGame, game_id)
