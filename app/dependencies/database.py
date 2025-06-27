@@ -1,7 +1,7 @@
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from models.game import Base
+from app.models.game import Base
 
 
 DBSession = sessionmaker(autocommit=False, autoflush=False)

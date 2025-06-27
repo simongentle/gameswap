@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from models.game import Game as DBGame
-from schemas.game import Game, GameCreate, GameUpdate
+from app.models.game import Game as DBGame
+from app.schemas.game import Game, GameCreate, GameUpdate
 
 
 class NotFoundError(Exception):
