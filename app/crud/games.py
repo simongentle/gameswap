@@ -16,7 +16,7 @@ def get_game(session: Session, game_id: int) -> Game:
 
 
 def get_games(session: Session) -> list[Game]:
-    games = session.query(DBGame)
+    games = session.query(DBGame).all()
     return games
 
 
