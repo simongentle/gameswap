@@ -26,7 +26,7 @@ def get_games(session: Session = Depends(get_db_session)) -> list[Game]:
 def get_game(game_id: int, session: Session = Depends(get_db_session)) -> Game:
     try:
         return games.get_game(session, game_id)
-    except games.NotFoundError as exc:
+    except games.GameNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
 
 
@@ -34,7 +34,7 @@ def get_game(game_id: int, session: Session = Depends(get_db_session)) -> Game:
 def update_game(game_id: int, params: GameUpdate, session: Session = Depends(get_db_session)) -> Game:
     try:
         return games.update_game(session, game_id, params)
-    except games.NotFoundError as exc:
+    except games.GameNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
 
 
@@ -42,5 +42,5 @@ def update_game(game_id: int, params: GameUpdate, session: Session = Depends(get
 def delete_game(game_id: int, session: Session = Depends(get_db_session)) -> Game:
     try:
         return games.delete_game(session, game_id)
-    except games.NotFoundError as exc:
+    except games.GameNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
