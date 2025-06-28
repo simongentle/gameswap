@@ -51,6 +51,23 @@ def test_create_game(test_db) -> None:
     )
 
 
+def test_get_game(test_db) -> None:
+    game_data = {
+        "title": "Sonic The Hedehog",
+        "platform": "SEGA Mega Drive",
+    }
+    response = client.post("/games", json=game_data)
+    assert response.status_code == 200, response.text
+
+    response = client.get(f"/games/{1}")
+    game = response.json()
+    assert (
+        game["id"] == 1
+        and game["title"] == game_data["title"]
+        and game["platform"] == game_data["platform"]
+    )
+
+
 def test_get_game_not_exists(test_db):
     response = client.get(f"/games/{0}")
     assert response.status_code == 404, response.text
