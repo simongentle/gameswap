@@ -73,6 +73,19 @@ def test_get_game_not_exists(test_db):
     assert response.status_code == 404, response.text
 
 
+def test_delete_game(test_db) -> None:
+    game_data = {
+        "title": "Sonic The Hedehog",
+        "platform": "SEGA Mega Drive",
+    }
+    response = client.post("/games", json=game_data)
+    assert response.status_code == 200, response.text
+
+    response = client.delete(f"/games/{1}")
+    response = client.get(f"/games/{1}")
+    assert response.status_code == 404, response.text
+    
+
 def test_delete_game_not_exists(test_db):
     response = client.delete(f"/games/{0}")
     assert response.status_code == 404, response.text
