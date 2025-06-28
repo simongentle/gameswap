@@ -29,9 +29,7 @@ def create_game(session: Session, params: GameCreate) -> Game:
     
 
 def update_game(session: Session, game_id: int, params: GameUpdate) -> Game:
-    game = session.get(DBGame, game_id)
-    if game is None:
-        raise GameNotFoundError
+    game = get_game(session, game_id)
     for attr, value in params.model_dump().items():
         setattr(game, attr, value)
     session.add(game)
@@ -40,10 +38,8 @@ def update_game(session: Session, game_id: int, params: GameUpdate) -> Game:
     return game
 
 
-def delete_game(session: Session, game_id: int) -> Game:
-    game = session.get(DBGame, game_id)
-    if game is None:
-        raise GameNotFoundError
+def delete_game(session: Session, game_id: int) -> Game:    
+    game = get_game(session, game_id)
     session.delete(game)
     session.commit()
     return game
