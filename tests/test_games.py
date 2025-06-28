@@ -88,7 +88,7 @@ def test_update_not_allowed(test_db) -> None:
         "platform": "SEGA Mega Drive",
     }
 
-    response = client.patch(f"/games/{2}", json=update_data)
+    response = client.put(f"/games/{2}", json=update_data)
     assert response.status_code == 409, response.text
 
 
