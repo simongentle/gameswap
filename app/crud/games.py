@@ -1,15 +1,10 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 
 from app.models.game import Game as DBGame
 from app.schemas.game import Game, GameCreate, GameUpdate
 
 
 class GameNotFoundError(Exception):
-    pass
-
-
-class DuplicateGameError(Exception):
     pass
 
 
@@ -27,14 +22,10 @@ def get_games(session: Session) -> list[Game]:
 
 def create_game(session: Session, params: GameCreate) -> Game:
     game = DBGame(**params.model_dump())
-    try:
-        session.add(game)
-        session.commit()
-        session.refresh(game)
-        return game
-    except IntegrityError as exc:
-        session.rollback()
-        raise DuplicateGameError from exc
+    session.add(game)
+    session.commit()
+    session.refresh(game)
+    return game
     
 
 def update_game(session: Session, game_id: int, params: GameUpdate) -> Game:
@@ -43,14 +34,10 @@ def update_game(session: Session, game_id: int, params: GameUpdate) -> Game:
         raise GameNotFoundError
     for attr, value in params.model_dump().items():
         setattr(game, attr, value)
-    try:
-        session.add(game)
-        session.commit()
-        session.refresh(game)
-        return game
-    except IntegrityError as exc:
-        session.rollback()
-        raise DuplicateGameError from exc
+    session.add(game)
+    session.commit()
+    session.refresh(game)
+    return game
 
 
 def delete_game(session: Session, game_id: int) -> Game:
