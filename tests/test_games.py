@@ -68,6 +68,30 @@ def test_get_game_not_exists(test_db):
     assert response.status_code == 404, response.text
 
 
+def test_update_not_allowed(test_db) -> None:
+    game_data = {
+        "title": "Sonic The Hedehog",
+        "platform": "SEGA Mega Drive",
+    }
+    response = client.post("/games", json=game_data)
+    assert response.status_code == 200, response.text
+
+    game_data = {
+        "title": "Super Mario Land",
+        "platform": "GAME BOY",
+    }
+    response = client.post("/games", json=game_data)
+    assert response.status_code == 200, response.text
+
+    update_data = {
+        "title": "Sonic The Hedehog",
+        "platform": "SEGA Mega Drive",
+    }
+
+    response = client.patch(f"/games/{2}", json=update_data)
+    assert response.status_code == 409, response.text
+
+
 def test_delete_game_not_exists(test_db):
     response = client.delete(f"/games/{0}")
     assert response.status_code == 404, response.text

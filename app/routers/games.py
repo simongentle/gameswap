@@ -36,6 +36,8 @@ def update_game(game_id: int, params: GameUpdate, session: Session = Depends(get
         return games.update_game(session, game_id, params)
     except games.GameNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
+    except games.DuplicateGameError as exc:
+        raise HTTPException(status_code=409) from exc
 
 
 @router.delete("/games/{game_id}", response_model=Game) 
