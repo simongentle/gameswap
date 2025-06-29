@@ -16,5 +16,3 @@ class GameUpdate(GameBase):
 
 class Game(GameBase):
     id: int
-    title: str
-    platform: str
