@@ -13,9 +13,9 @@ def init_db(file: str):
     Base.metadata.create_all(bind=engine)
 
 
-def get_db_session():
-    db = DBSession()
+def get_session():
+    session = DBSession()
     try:
-        yield db
+        yield session
     finally:
-        db.close()
+        session.close()

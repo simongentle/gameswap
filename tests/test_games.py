@@ -2,42 +2,37 @@ import pytest
 
 from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 
 from app.models.game import Base
 from app.main import app
-from app.dependencies.database import get_db_session
+from app.dependencies.database import get_session
 
 
-DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={
-        "check_same_thread": False,
-    },
-    poolclass=StaticPool,
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+@pytest.fixture(name="session")
+def session_fixture():
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
+    Base.metadata.create_all(engine)
+
+    with Session(engine, autocommit=False, autoflush=False) as session:
+        yield session
 
 
-@pytest.fixture()
-def test_db():
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
+@pytest.fixture(name="client")  
+def client_fixture(session: Session):  
+    def get_session_override():  
+        return session
+
+    app.dependency_overrides[get_session] = get_session_override  
+
+    client = TestClient(app)  
+    yield client  
+    app.dependency_overrides.clear()  
 
 
-def override_get_db_session():
-    database = TestingSessionLocal()
-    yield database
-    database.close()
-
-
-app.dependency_overrides[get_db_session] = override_get_db_session
-client = TestClient(app)
-
-
-def test_create_game(test_db) -> None:
+def test_create_game(client: TestClient) -> None:
     game_data = {
         "title": "Sonic The Hedehog",
         "platform": "SEGA Mega Drive",
@@ -51,7 +46,7 @@ def test_create_game(test_db) -> None:
     )
 
 
-def test_get_game(test_db) -> None:
+def test_get_game(client: TestClient) -> None:
     game_data = {
         "title": "Sonic The Hedehog",
         "platform": "SEGA Mega Drive",
@@ -68,12 +63,12 @@ def test_get_game(test_db) -> None:
     )
 
 
-def test_get_game_not_exists(test_db):
+def test_get_game_not_exists(client: TestClient):
     response = client.get(f"/games/{0}")
     assert response.status_code == 404, response.text
 
 
-def test_delete_game(test_db) -> None:
+def test_delete_game(client: TestClient) -> None:
     game_data = {
         "title": "Sonic The Hedehog",
         "platform": "SEGA Mega Drive",
@@ -86,6 +81,6 @@ def test_delete_game(test_db) -> None:
     assert response.status_code == 404, response.text
     
 
-def test_delete_game_not_exists(test_db):
+def test_delete_game_not_exists(client: TestClient):
     response = client.delete(f"/games/{0}")
     assert response.status_code == 404, response.text
