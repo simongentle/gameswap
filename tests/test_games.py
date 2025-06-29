@@ -39,17 +39,19 @@ def test_create_game(client: TestClient) -> None:
         "platform": "SEGA Mega Drive",
     }
     response = client.post("/games", json=game_data)
-    game = response.json()
+    data = response.json()
+
+    assert response.status_code == 200, response.text
     assert (
-        "id" in game
-        and game["title"] == game_data["title"]
-        and game["platform"] == game_data["platform"]
+        "id" in data
+        and data["title"] == game_data["title"]
+        and data["platform"] == game_data["platform"]
     )
 
 
 def test_create_game_incomplete(client: TestClient) -> None:
     response = client.post("/games", json={"title": "Sonic The Hedehog"})
-    assert response.status_code == 422
+    assert response.status_code == 422, response.text
 
 
 def test_get_game(session: Session, client: TestClient) -> None:
@@ -58,19 +60,39 @@ def test_get_game(session: Session, client: TestClient) -> None:
     session.commit()
 
     response = client.get(f"/games/{game.id}")
-    game_data = response.json()
+    data = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == 200, response.text
     assert (
-        game_data["id"] == game.id
-        and game_data["title"] == game.title
-        and game_data["platform"] == game.platform
+        data["id"] == game.id
+        and data["title"] == game.title
+        and data["platform"] == game.platform
     )
 
 
-def test_get_game_not_exists(client: TestClient):
+def test_get_game_not_exists(client: TestClient) -> None:
     response = client.get(f"/games/{0}")
     assert response.status_code == 404, response.text
+
+
+def test_update_game(session: Session, client: TestClient) -> None:
+    game = DBGame(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    session.add(game)
+    session.commit()
+
+    update_data = {
+        "title": "Super Mario Land",
+        "platform": "GAME BOY",
+    }
+    response = client.put(f"/games/{game.id}", json=update_data)
+    data = response.json()
+    
+    assert response.status_code == 200, response.text
+    assert (
+        data["id"] == game.id
+        and data["title"] == update_data["title"]
+        and data["platform"] == update_data["platform"]
+    )
 
 
 def test_delete_game(session: Session, client: TestClient) -> None:
@@ -85,6 +107,6 @@ def test_delete_game(session: Session, client: TestClient) -> None:
     assert game_in_db is None
     
 
-def test_delete_game_not_exists(client: TestClient):
+def test_delete_game_not_exists(client: TestClient) -> None:
     response = client.delete(f"/games/{0}")
     assert response.status_code == 404, response.text
