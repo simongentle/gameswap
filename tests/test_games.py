@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import Session
 
-from app.models.game import Base
+from app.models.game import Base, Status
 from app.models.game import Game as DBGame
 from app.main import app
 from app.dependencies.database import get_session
@@ -46,11 +46,22 @@ def test_create_game(client: TestClient) -> None:
         "id" in data
         and data["title"] == game_data["title"]
         and data["platform"] == game_data["platform"]
+        and data["status"] == Status.OWNED.value
     )
 
 
 def test_create_game_incomplete(client: TestClient) -> None:
     response = client.post("/games", json={"title": "Sonic The Hedehog"})
+    assert response.status_code == 422, response.text
+
+
+def test_create_game_invalid_status(client: TestClient) -> None:
+    game_data = {
+        "title": "Crash Bandicoot",
+        "platform": "PlayStation",
+        "status": "stolen",
+    }
+    response = client.post("/games", json=game_data)
     assert response.status_code == 422, response.text
 
 
@@ -67,6 +78,7 @@ def test_get_game(session: Session, client: TestClient) -> None:
         data["id"] == game.id
         and data["title"] == game.title
         and data["platform"] == game.platform
+        and data["status"] == Status.OWNED.value
     )
 
 
@@ -83,6 +95,7 @@ def test_update_game(session: Session, client: TestClient) -> None:
     update_data = {
         "title": "Super Mario Land",
         "platform": "GAME BOY",
+        "status": "borrowed",
     }
     response = client.put(f"/games/{game.id}", json=update_data)
     data = response.json()
@@ -92,6 +105,7 @@ def test_update_game(session: Session, client: TestClient) -> None:
         data["id"] == game.id
         and data["title"] == update_data["title"]
         and data["platform"] == update_data["platform"]
+        and data["status"] == Status.BORROWED.value
     )
 
 
