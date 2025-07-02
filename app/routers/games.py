@@ -27,7 +27,7 @@ def get_game(game_id: int, session: Session = Depends(get_session)) -> Game:
         raise HTTPException(status_code=404) from exc
 
 
-@router.put("/games/{game_id}", response_model=Game)
+@router.patch("/games/{game_id}", response_model=Game)
 def update_game(game_id: int, params: GameUpdate, session: Session = Depends(get_session)) -> Game:
     try:
         return games.update_game(session, game_id, params)

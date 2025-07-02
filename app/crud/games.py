@@ -30,7 +30,7 @@ def create_game(session: Session, params: GameCreate) -> Game:
 
 def update_game(session: Session, game_id: int, params: GameUpdate) -> Game:
     game = get_game(session, game_id)
-    for attr, value in params.model_dump().items():
+    for attr, value in params.model_dump(exclude_unset=True).items():
         setattr(game, attr, value)
     session.add(game)
     session.commit()

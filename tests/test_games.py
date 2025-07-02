@@ -92,19 +92,14 @@ def test_update_game(session: Session, client: TestClient) -> None:
     session.add(game)
     session.commit()
 
-    update_data = {
-        "title": "Super Mario Land",
-        "platform": "GAME BOY",
-        "status": "borrowed",
-    }
-    response = client.put(f"/games/{game.id}", json=update_data)
+    response = client.patch(f"/games/{game.id}", json={"status": "borrowed"})
     data = response.json()
     
     assert response.status_code == 200, response.text
     assert (
         data["id"] == game.id
-        and data["title"] == update_data["title"]
-        and data["platform"] == update_data["platform"]
+        and data["title"] == game.title
+        and data["platform"] == game.platform
         and data["status"] == Status.BORROWED.value
     )
 

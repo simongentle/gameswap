@@ -14,7 +14,9 @@ class GameCreate(GameBase):
 
 
 class GameUpdate(GameBase):
-    pass
+    title: str | None = None
+    platform: str | None = None
+    status: Status | None = None
 
 
 class Game(GameBase):
