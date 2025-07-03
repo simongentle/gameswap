@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.models.game import Game as DBGame
+from app.models import Game as DBGame
 from app.schemas.game import Game, GameCreate, GameUpdate
 
 

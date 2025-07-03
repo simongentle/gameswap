@@ -4,8 +4,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import Session
 
-from app.models.game import Base, Status
-from app.models.game import Game as DBGame
+from app.models import Base, Status, Game as DBGame
 from app.main import app
 from app.dependencies.database import get_session
 

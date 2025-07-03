@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.models.game import Status
+from app.models import Status
 
 
 class GameBase(BaseModel):
