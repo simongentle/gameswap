@@ -16,7 +16,6 @@ class SwapCreate(SwapBase):
 class SwapUpdate(SwapBase):
     friend: str | None = None
     return_date: dt.date | None = None
-    games: list[Game] | None = None
 
 
 class Swap(SwapBase):
