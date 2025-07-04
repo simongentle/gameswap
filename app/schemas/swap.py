@@ -7,7 +7,6 @@ from app.schemas.game import Game
 class SwapBase(BaseModel):
     friend: str
     return_date: dt.date
-    games: list[Game]
 
 
 class SwapCreate(SwapBase):
