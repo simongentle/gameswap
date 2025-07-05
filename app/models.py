@@ -16,7 +16,7 @@ class Status(StrEnum):
 class Game(Base):
     __tablename__ = "game"
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str]
+    title: Mapped[str] = mapped_column(index=True)
     platform: Mapped[str]
     status: Mapped[str] = mapped_column(default=Status.OWNED.value)
 
