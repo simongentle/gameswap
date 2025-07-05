@@ -3,7 +3,7 @@ import datetime as dt
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Swap as DBSwap
+from app.models import Game as DBGame, Status, Swap as DBSwap
 
 
 def test_create_swap(client: TestClient) -> None:
@@ -32,6 +32,22 @@ def test_get_swap(session: Session, client: TestClient) -> None:
     session.add(swap)
     session.commit()
 
+    lent_game = DBGame(
+        title="Sonic The Hedehog", 
+        platform="SEGA Mega Drive", 
+        status=Status.LENT,
+        swap_id=swap.id,
+    )
+    session.add(lent_game)
+    borrowed_game = DBGame(
+        title="Super Mario Land", 
+        platform="GAME BOY", 
+        status=Status.BORROWED,
+        swap_id=swap.id,
+    )
+    session.add(borrowed_game)
+    session.commit()
+
     response = client.get(f"/swaps/{swap.id}")
     data = response.json()
 
@@ -40,6 +56,7 @@ def test_get_swap(session: Session, client: TestClient) -> None:
         data["id"] == swap.id
         and data["friend"] == swap.friend
         and data["return_date"] == swap.return_date.strftime("%Y-%m-%d")
+        and len(data["games"]) == 2 
     )
 
 

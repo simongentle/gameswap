@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 import app.crud.swaps as swaps
 from app.dependencies.database import get_session
-from app.schemas.swap import Swap, SwapCreate, SwapUpdate
+from app.schemas.swap import Swap, SwapCreate, SwapUpdate, SwapWithGames
 
 
 router = APIRouter()
@@ -19,7 +19,7 @@ def get_swaps(session: Session = Depends(get_session)) -> list[Swap]:
     return swaps.get_swaps(session)
 
 
-@router.get("/swaps/{swap_id}", response_model=Swap) 
+@router.get("/swaps/{swap_id}", response_model=SwapWithGames) 
 def get_swap(swap_id: int, session: Session = Depends(get_session)) -> Swap:
     try:
         return swaps.get_swap(session, swap_id)

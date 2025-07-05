@@ -18,6 +18,7 @@ def test_create_game(client: TestClient) -> None:
         and data["title"] == game_data["title"]
         and data["platform"] == game_data["platform"]
         and data["status"] == Status.OWNED.value
+        and not data["swap_id"]
     )
 
 
