@@ -14,7 +14,7 @@ class GameCreate(GameBase):
     pass
 
 
-class GameUpdate(GameBase):
+class GameUpdate(BaseModel):
     title: str | None = None
     platform: str | None = None
     status: Status | None = None

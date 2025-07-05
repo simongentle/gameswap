@@ -13,7 +13,7 @@ class SwapCreate(SwapBase):
     pass
 
 
-class SwapUpdate(SwapBase):
+class SwapUpdate(BaseModel):
     friend: str | None = None
     return_date: dt.date | None = None
 
