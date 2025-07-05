@@ -1,12 +1,12 @@
 import datetime as dt
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, FutureDate
 
 from app.schemas.game import Game
 
 
 class SwapBase(BaseModel):
     friend: str
-    return_date: dt.date
+    return_date: FutureDate
 
 
 class SwapCreate(SwapBase):
@@ -15,7 +15,7 @@ class SwapCreate(SwapBase):
 
 class SwapUpdate(BaseModel):
     friend: str | None = None
-    return_date: dt.date | None = None
+    return_date: FutureDate | None = None
 
 
 class Swap(SwapBase):
