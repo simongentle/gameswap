@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.dependencies.notifications import Event, Notification, NotificationService
 from app.models import Swap as DBSwap
 from app.schemas.swap import Swap, SwapCreate, SwapUpdate
 
@@ -20,11 +21,23 @@ def get_swaps(session: Session) -> list[Swap]:
     return swaps
 
 
-def create_swap(session: Session, params: SwapCreate) -> Swap:
+def create_swap(
+        session: Session, 
+        params: SwapCreate, 
+        notification_service: NotificationService,
+    ) -> Swap:
     swap = DBSwap(**params.model_dump())
     session.add(swap)
     session.commit()
     session.refresh(swap)
+
+    notification_service.post(
+        Notification(
+            event=Event.SWAP_CREATED,
+            message=f"Created swap {swap.id} with {swap.friend}!"
+        )
+    )
+
     return swap
     
 

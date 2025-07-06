@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 import app.crud.swaps as swaps
 from app.dependencies.database import get_session
+from app.dependencies.notifications import NotificationService, get_notification_service
 from app.schemas.swap import Swap, SwapCreate, SwapUpdate, SwapWithGames
 
 
@@ -10,8 +11,12 @@ router = APIRouter()
 
 
 @router.post("/swaps", response_model=Swap)
-def create_swap(swap: SwapCreate, session: Session = Depends(get_session)) -> Swap:
-    return swaps.create_swap(session, swap)
+def create_swap(
+    swap: SwapCreate, 
+    session: Session = Depends(get_session),
+    notification_service: NotificationService = Depends(get_notification_service),
+) -> Swap:
+    return swaps.create_swap(session, swap, notification_service)
 
 
 @router.get("/swaps", response_model=list[Swap]) 
