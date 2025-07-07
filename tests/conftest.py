@@ -11,8 +11,7 @@ from app.main import app
 
 
 class NotificationServiceMock:
-    @staticmethod
-    def post(notification: Notification) -> None:
+    def post(self, notification: Notification) -> None:
         return
     
 

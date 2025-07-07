@@ -1,8 +1,6 @@
-from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
-from importlib import import_module
-from typing import Callable, Protocol
+from typing import Callable
 
 
 class Event(StrEnum):
@@ -18,36 +16,33 @@ class Notification:
 Handler = Callable[[Notification], None]
 
 
-HANDLERS: defaultdict[Event, list[Handler]] = defaultdict(list)
+@dataclass
+class NotificationService:
+    handlers: dict[Event, list[Handler]] = field(default_factory=dict)
 
+    def subscribe(self, event: Event, handler: Handler):
+        if event not in self.handlers:
+            self.handlers[event] = []
+        self.handlers[event].append(handler)
 
-def subscribe(event: Event, handler: Handler):
-    HANDLERS[event].append(handler)
+    def unsubscribe(self, event: Event, handler: Handler):
+        if event not in self.handlers:
+            return
+        self.handlers[event].remove(handler)
 
-
-def unsubscribe(event: Event, handler: Handler):
-    if event not in HANDLERS:
-        return
-    HANDLERS[event].remove(handler)
-
-
-def post(notification: Notification) -> None:
-    if notification.event not in HANDLERS:
-        return
-    for handler in HANDLERS[notification.event]:
-        handler(notification)
+    def post(self, notification: Notification) -> None:
+        if notification.event not in self.handlers:
+            return
+        for handler in self.handlers[notification.event]:
+            handler(notification)
 
 
 def handle_create_swap(notification: Notification) -> None:
     print(notification.message)
 
 
-class NotificationService(Protocol):
-    @staticmethod
-    def post(notification: Notification) -> None: ...
-
-
 def get_notification_service() -> NotificationService:
-    subscribe(Event.SWAP_CREATED, handle_create_swap)
-    return import_module(__name__)
+    service = NotificationService()
+    service.subscribe(Event.SWAP_CREATED, handle_create_swap)
+    return service
     
