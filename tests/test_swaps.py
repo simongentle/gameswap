@@ -7,9 +7,10 @@ from app.models import Game as DBGame, Status, Swap as DBSwap
 
 
 def test_create_swap(client: TestClient) -> None:
+    return_date = dt.date.today() + dt.timedelta(weeks=2)
     swap_data = {
         "friend": "Jeroen",
-        "return_date": "2025-12-31",
+        "return_date": return_date.strftime("%Y-%m-%d"),
     }
     response = client.post("/swaps", json=swap_data)
     data = response.json()

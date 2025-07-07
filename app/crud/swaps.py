@@ -34,7 +34,7 @@ def create_swap(
     notification_service.post(
         Notification(
             event=Event.SWAP_CREATED,
-            message=f"Created swap {swap.id} with {swap.friend}!"
+            message=f"Created swap with {swap.friend}! Return games by {swap.return_date}."
         )
     )
 
