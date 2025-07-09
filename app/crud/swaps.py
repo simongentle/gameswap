@@ -1,12 +1,18 @@
 from sqlalchemy.orm import Session
+from typing import Protocol
 
-from app.dependencies.notifications import Event, Notification, NotificationService
+from app.dependencies.notifications import Event, Notification
 from app.models import Swap as DBSwap
 from app.schemas.swap import Swap, SwapCreate, SwapUpdate
 
 
 class SwapNotFoundError(Exception):
     pass
+
+
+class NotificationService(Protocol):
+    def post(self, notification: Notification) -> None:
+        return
 
 
 def get_swap(session: Session, swap_id: int) -> Swap:
