@@ -7,9 +7,6 @@ from app.models import Swap as DBSwap
 from app.schemas.swap import Swap, SwapCreate, SwapUpdate
 
 
-SWAP_DUE_THRESHOLD_IN_DAYS = 7
-
-
 class SwapNotFoundError(Exception):
     pass
 
@@ -19,14 +16,7 @@ class NotificationService(Protocol):
         return
 
 
-def swap_is_due(return_date: dt.date) -> bool:
-    days_remaining = (return_date - dt.date.today()).days
-    if days_remaining <= SWAP_DUE_THRESHOLD_IN_DAYS:
-        return True
-    return False
-
-
-def find_swap(session: Session, swap_id: int) -> Swap:
+def find_swap(session: Session, swap_id: int) -> DBSwap:
     swap = session.get(DBSwap, swap_id)
     if swap is None:
         raise SwapNotFoundError
@@ -39,7 +29,7 @@ def get_swap(
         notification_service: NotificationService,
     ) -> Swap:
     swap = find_swap(session, swap_id)
-    if swap_is_due(swap.return_date):
+    if swap.is_due():
         notification_service.post(
             Notification(
                 event=Event.SWAP_DUE,

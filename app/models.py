@@ -3,6 +3,10 @@ from enum import StrEnum
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+
+SWAP_DUE_THRESHOLD_IN_DAYS = 7
+
+
 class Base(DeclarativeBase):
     pass
 
@@ -31,3 +35,7 @@ class Swap(Base):
     return_date: Mapped[dt.date] 
 
     games: Mapped[list[Game]] = relationship(back_populates="swap")
+
+    def is_due(self) -> bool:
+        days_remaining = (self.return_date - dt.date.today()).days
+        return days_remaining <= SWAP_DUE_THRESHOLD_IN_DAYS
