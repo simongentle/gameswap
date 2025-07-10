@@ -25,9 +25,13 @@ def get_swaps(session: Session = Depends(get_session)) -> list[Swap]:
 
 
 @router.get("/swaps/{swap_id}", response_model=SwapWithGames) 
-def get_swap(swap_id: int, session: Session = Depends(get_session)) -> Swap:
+def get_swap(
+    swap_id: int, 
+    session: Session = Depends(get_session),
+    notification_service: NotificationService = Depends(get_notification_service),
+) -> Swap:
     try:
-        return swaps.get_swap(session, swap_id)
+        return swaps.get_swap(session, swap_id, notification_service)
     except swaps.SwapNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
 
