@@ -12,8 +12,8 @@ class SwapNotFoundError(Exception):
 
 
 class NotificationService(Protocol):
-    def post(self, notification: Notification) -> None:
-        return
+    def post(self, notification: Notification) -> None: 
+        ...
 
 
 def find_swap(session: Session, swap_id: int) -> DBSwap:
