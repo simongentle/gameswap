@@ -12,7 +12,7 @@ from app.main import app
 
 class NotificationServiceMock:
     def post(self, notification: Notification) -> None:
-        return
+        pass
     
 
 @pytest.fixture(name="session")
