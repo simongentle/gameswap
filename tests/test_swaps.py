@@ -50,6 +50,7 @@ def test_get_swap(session: Session, client: TestClient) -> None:
         title="Sonic The Hedehog", 
         platform="SEGA Mega Drive", 
         status=Status.LENT,
+        owned=True,
         swap_id=swap.id,
     )
     session.add(lent_game)
@@ -57,6 +58,7 @@ def test_get_swap(session: Session, client: TestClient) -> None:
         title="Super Mario Land", 
         platform="GAME BOY", 
         status=Status.BORROWED,
+        owned=False,
         swap_id=swap.id,
     )
     session.add(borrowed_game)

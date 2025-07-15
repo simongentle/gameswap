@@ -17,6 +17,7 @@ def test_create_game(client: TestClient) -> None:
         "id" in data
         and data["title"] == game_data["title"]
         and data["platform"] == game_data["platform"]
+        and data["owned"] == True
         and data["status"] == Status.OWNED.value
         and not data["swap_id"]
     )
@@ -50,6 +51,7 @@ def test_get_game(session: Session, client: TestClient) -> None:
         data["id"] == game.id
         and data["title"] == game.title
         and data["platform"] == game.platform
+        and data["owned"] == True
         and data["status"] == Status.OWNED.value
     )
 
@@ -86,6 +88,7 @@ def test_update_game(session: Session, client: TestClient) -> None:
         data["id"] == game.id
         and data["title"] == game.title
         and data["platform"] == game.platform
+        and data["owned"] == True
         and data["status"] == Status.BORROWED.value
     )
 
