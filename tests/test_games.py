@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Status, Game as DBGame
+from app.models import Game as DBGame
 
 
 def test_create_game(client: TestClient) -> None:
@@ -18,23 +18,12 @@ def test_create_game(client: TestClient) -> None:
         and data["title"] == game_data["title"]
         and data["platform"] == game_data["platform"]
         and data["owned"] == True
-        and data["status"] == Status.OWNED.value
         and not data["swap_id"]
     )
 
 
 def test_create_game_incomplete(client: TestClient) -> None:
     response = client.post("/games", json={"title": "Sonic The Hedehog"})
-    assert response.status_code == 422, response.text
-
-
-def test_create_game_invalid_status(client: TestClient) -> None:
-    game_data = {
-        "title": "Crash Bandicoot",
-        "platform": "PlayStation",
-        "status": "stolen",
-    }
-    response = client.post("/games", json=game_data)
     assert response.status_code == 422, response.text
 
 
@@ -52,7 +41,6 @@ def test_get_game(session: Session, client: TestClient) -> None:
         and data["title"] == game.title
         and data["platform"] == game.platform
         and data["owned"] == True
-        and data["status"] == Status.OWNED.value
     )
 
 
@@ -80,7 +68,7 @@ def test_update_game(session: Session, client: TestClient) -> None:
     session.add(game)
     session.commit()
 
-    response = client.patch(f"/games/{game.id}", json={"status": "borrowed"})
+    response = client.patch(f"/games/{game.id}", json={"owned": False})
     data = response.json()
     
     assert response.status_code == 200, response.text
@@ -88,8 +76,7 @@ def test_update_game(session: Session, client: TestClient) -> None:
         data["id"] == game.id
         and data["title"] == game.title
         and data["platform"] == game.platform
-        and data["owned"] == True
-        and data["status"] == Status.BORROWED.value
+        and data["owned"] == False
     )
 
 
