@@ -17,7 +17,6 @@ def test_create_game(client: TestClient) -> None:
         "id" in data
         and data["title"] == game_data["title"]
         and data["platform"] == game_data["platform"]
-        and data["owned"] == True
         and not data["swap_id"]
     )
 
@@ -40,7 +39,6 @@ def test_get_game(session: Session, client: TestClient) -> None:
         data["id"] == game.id
         and data["title"] == game.title
         and data["platform"] == game.platform
-        and data["owned"] == True
     )
 
 
@@ -68,15 +66,15 @@ def test_update_game(session: Session, client: TestClient) -> None:
     session.add(game)
     session.commit()
 
-    response = client.patch(f"/games/{game.id}", json={"owned": False})
+    updated_title = "Ristar"
+    response = client.patch(f"/games/{game.id}", json={"title": updated_title})
     data = response.json()
     
     assert response.status_code == 200, response.text
     assert (
         data["id"] == game.id
-        and data["title"] == game.title
+        and data["title"] == game.title == updated_title
         and data["platform"] == game.platform
-        and data["owned"] == False
     )
 
 

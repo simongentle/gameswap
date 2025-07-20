@@ -49,14 +49,12 @@ def test_get_swap(session: Session, client: TestClient) -> None:
     lent_game = DBGame(
         title="Sonic The Hedehog", 
         platform="SEGA Mega Drive", 
-        owned=True,
         swap_id=swap.id,
     )
     session.add(lent_game)
     borrowed_game = DBGame(
         title="Super Mario Land", 
         platform="GAME BOY", 
-        owned=False,
         swap_id=swap.id,
     )
     session.add(borrowed_game)

@@ -15,7 +15,6 @@ class Game(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(index=True)
     platform: Mapped[str]
-    owned: Mapped[bool] = mapped_column(default=True)
 
     swap_id: Mapped[int | None] = mapped_column(ForeignKey("swap.id"))
     swap: Mapped["Swap | None"] = relationship(back_populates="games")

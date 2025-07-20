@@ -4,7 +4,6 @@ from pydantic import BaseModel
 class GameBase(BaseModel):
     title: str
     platform: str
-    owned: bool = True
     swap_id: int | None = None
 
 
@@ -15,7 +14,6 @@ class GameCreate(GameBase):
 class GameUpdate(BaseModel):
     title: str | None = None
     platform: str | None = None
-    owned: bool | None = None
     swap_id: int | None = None
 
 
