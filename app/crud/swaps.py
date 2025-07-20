@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from typing import Protocol
 
 from app.dependencies.notifications import Event, Notification
-from app.models import Swap as DBSwap
-from app.schemas.swap import Swap, SwapCreate, SwapUpdate
+from app.models import Swap
+from app.schemas.swap import SwapCreate, SwapUpdate
 
 
 class SwapNotFoundError(Exception):
@@ -16,8 +16,8 @@ class NotificationService(Protocol):
         ...
 
 
-def find_swap(session: Session, swap_id: int) -> DBSwap:
-    swap = session.get(DBSwap, swap_id)
+def find_swap(session: Session, swap_id: int) -> Swap:
+    swap = session.get(Swap, swap_id)
     if swap is None:
         raise SwapNotFoundError
     return swap
@@ -40,7 +40,7 @@ def get_swap(
 
 
 def get_swaps(session: Session) -> list[Swap]:
-    swaps = session.query(DBSwap).all()
+    swaps = session.query(Swap).all()
     return swaps
 
 
@@ -49,7 +49,7 @@ def create_swap(
         params: SwapCreate, 
         notification_service: NotificationService,
     ) -> Swap:
-    swap = DBSwap(**params.model_dump())
+    swap = Swap(**params.model_dump())
     session.add(swap)
     session.commit()
     session.refresh(swap)

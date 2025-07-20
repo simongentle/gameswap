@@ -11,19 +11,19 @@ router = APIRouter()
 
 
 @router.post("/games", response_model=Game)
-def create_game(game: GameCreate, session: Session = Depends(get_session)) -> Game:
+def create_game(game: GameCreate, session: Session = Depends(get_session)):
     return games.create_game(session, game)
 
 
 @router.get("/games", response_model=list[Game]) 
-def get_games(title: str | None = None, session: Session = Depends(get_session)) -> list[Game]:
+def get_games(title: str | None = None, session: Session = Depends(get_session)):
     if title is None:
         return games.get_games(session)
     return games.get_games_by_title(session, title)
 
 
 @router.get("/games/{game_id}", response_model=Game) 
-def get_game(game_id: int, session: Session = Depends(get_session)) -> Game:
+def get_game(game_id: int, session: Session = Depends(get_session)):
     try:
         return games.get_game(session, game_id)
     except games.GameNotFoundError as exc:
@@ -31,7 +31,7 @@ def get_game(game_id: int, session: Session = Depends(get_session)) -> Game:
     
 
 @router.get("/games/{game_id}/gamers", response_model=list[Gamer]) 
-def get_gamers_for_given_game(game_id: int, session: Session = Depends(get_session)) -> list[Gamer]:
+def get_gamers_for_given_game(game_id: int, session: Session = Depends(get_session)):
     try:
         game = games.get_game(session, game_id)
     except games.GameNotFoundError as exc:
@@ -40,7 +40,7 @@ def get_gamers_for_given_game(game_id: int, session: Session = Depends(get_sessi
 
 
 @router.patch("/games/{game_id}", response_model=Game)
-def update_game(game_id: int, params: GameUpdate, session: Session = Depends(get_session)) -> Game:
+def update_game(game_id: int, params: GameUpdate, session: Session = Depends(get_session)):
     try:
         return games.update_game(session, game_id, params)
     except games.GameNotFoundError as exc:
@@ -48,7 +48,7 @@ def update_game(game_id: int, params: GameUpdate, session: Session = Depends(get
 
 
 @router.delete("/games/{game_id}", response_model=Game) 
-def delete_game(game_id: int, session: Session = Depends(get_session)) -> Game:
+def delete_game(game_id: int, session: Session = Depends(get_session)):
     try:
         return games.delete_game(session, game_id)
     except games.GameNotFoundError as exc:

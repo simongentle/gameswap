@@ -3,7 +3,7 @@ import datetime as dt
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Game as DBGame, Swap as DBSwap
+from app.models import Game, Swap
 
 
 def test_create_swap(client: TestClient) -> None:
@@ -39,20 +39,20 @@ def test_create_swap_past_return_date(client: TestClient) -> None:
 
 
 def test_get_swap(session: Session, client: TestClient) -> None:
-    swap = DBSwap(
+    swap = Swap(
         friend="Jeroen", 
         return_date=dt.date.today() + dt.timedelta(weeks=2),
     )
     session.add(swap)
     session.commit()
 
-    lent_game = DBGame(
+    lent_game = Game(
         title="Sonic The Hedehog", 
         platform="SEGA Mega Drive", 
         swap_id=swap.id,
     )
     session.add(lent_game)
-    borrowed_game = DBGame(
+    borrowed_game = Game(
         title="Super Mario Land", 
         platform="GAME BOY", 
         swap_id=swap.id,
@@ -79,7 +79,7 @@ def test_get_swap_not_exists(client: TestClient) -> None:
 
 def test_update_swap(session: Session, client: TestClient) -> None:
     return_date = dt.date.today() + dt.timedelta(weeks=2)
-    swap = DBSwap(friend="Jeroen", return_date=return_date)
+    swap = Swap(friend="Jeroen", return_date=return_date)
     session.add(swap)
     session.commit()
 
@@ -102,7 +102,7 @@ def test_update_swap(session: Session, client: TestClient) -> None:
 
 
 def test_delete_swap(session: Session, client: TestClient) -> None:
-    swap = DBSwap(
+    swap = Swap(
         friend="Jeroen", 
         return_date=dt.date.today() + dt.timedelta(weeks=2),
     )
@@ -112,7 +112,7 @@ def test_delete_swap(session: Session, client: TestClient) -> None:
     response = client.delete(f"/swaps/{swap.id}")
     assert response.status_code == 200, response.text
 
-    swap_in_db = session.get(DBSwap, swap.id)
+    swap_in_db = session.get(Swap, swap.id)
     assert swap_in_db is None
     
 

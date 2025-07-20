@@ -1,8 +1,8 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.models import Gamer as DBGamer
-from app.schemas.gamer import Gamer, GamerCreate, GamerUpdate
+from app.models import Gamer
+from app.schemas.gamer import GamerCreate, GamerUpdate
 
 
 class GamerNotFoundError(Exception):
@@ -14,19 +14,19 @@ class DuplicateGamerError(Exception):
 
 
 def get_gamer(session: Session, gamer_id: int) -> Gamer:
-    gamer = session.get(DBGamer, gamer_id)
+    gamer = session.get(Gamer, gamer_id)
     if gamer is None:
         raise GamerNotFoundError
     return gamer
 
 
 def get_gamers(session: Session) -> list[Gamer]:
-    gamers = session.query(DBGamer).all()
+    gamers = session.query(Gamer).all()
     return gamers
 
 
 def create_gamer(session: Session, params: GamerCreate) -> Gamer:
-    gamer = DBGamer(**params.model_dump())
+    gamer = Gamer(**params.model_dump())
     session.add(gamer)
     try:
         session.commit()

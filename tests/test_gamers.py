@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Game as DBGame, Gamer as DBGamer
+from app.models import Game, Gamer
 
 
 def test_create_gamer(client: TestClient) -> None:
@@ -30,7 +30,7 @@ def test_create_gamer_invalid_email(client: TestClient) -> None:
 
 
 def test_get_gamer(session: Session, client: TestClient) -> None:
-    gamer = DBGamer(name="Player One", email="press@start.com")
+    gamer = Gamer(name="Player One", email="press@start.com")
     session.add(gamer)
     session.commit()
 
@@ -53,7 +53,7 @@ def test_get_gamer_not_exists(client: TestClient) -> None:
 def test_gamer_email_not_unique(session: Session, client: TestClient) -> None:
     test_email = "press@start.com"
 
-    gamer1 = DBGamer(name="Player One", email=test_email)
+    gamer1 = Gamer(name="Player One", email=test_email)
     session.add(gamer1)
     session.commit()
 
@@ -66,9 +66,9 @@ def test_gamer_email_not_unique(session: Session, client: TestClient) -> None:
 
 
 def test_get_games_for_given_gamer(session: Session, client: TestClient) -> None:
-    gamer = DBGamer(name="Player One", email="press@start.com")
-    game1 = DBGame(title="Sonic The Hedehog", platform="SEGA Mega Drive")
-    game2 = DBGame(title="Super Mario Land", platform="GAME BOY")
+    gamer = Gamer(name="Player One", email="press@start.com")
+    game1 = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game2 = Game(title="Super Mario Land", platform="GAME BOY")
     session.add_all([gamer, game1, game2])
     session.commit()
 
@@ -84,7 +84,7 @@ def test_get_games_for_given_gamer(session: Session, client: TestClient) -> None
 
 
 def test_update_gamer(session: Session, client: TestClient) -> None:
-    gamer = DBGamer(name="Player One", email="press@start.com")
+    gamer = Gamer(name="Player One", email="press@start.com")
     session.add(gamer)
     session.commit()
 
@@ -101,14 +101,14 @@ def test_update_gamer(session: Session, client: TestClient) -> None:
 
 
 def test_delete_gamer(session: Session, client: TestClient) -> None:
-    gamer = DBGamer(name="Player One", email="press@start.com")
+    gamer = Gamer(name="Player One", email="press@start.com")
     session.add(gamer)
     session.commit()
 
     response = client.delete(f"/gamers/{gamer.id}")
     assert response.status_code == 200, response.text
 
-    gamer_in_db = session.get(DBGamer, gamer.id)
+    gamer_in_db = session.get(Gamer, gamer.id)
     assert gamer_in_db is None
     
 

@@ -15,12 +15,12 @@ def create_swap(
     swap: SwapCreate, 
     session: Session = Depends(get_session),
     notification_service: NotificationService = Depends(get_notification_service),
-) -> Swap:
+):
     return swaps.create_swap(session, swap, notification_service)
 
 
 @router.get("/swaps", response_model=list[Swap]) 
-def get_swaps(session: Session = Depends(get_session)) -> list[Swap]:
+def get_swaps(session: Session = Depends(get_session)):
     return swaps.get_swaps(session)
 
 
@@ -29,7 +29,7 @@ def get_swap(
     swap_id: int, 
     session: Session = Depends(get_session),
     notification_service: NotificationService = Depends(get_notification_service),
-) -> Swap:
+):
     try:
         return swaps.get_swap(session, swap_id, notification_service)
     except swaps.SwapNotFoundError as exc:
@@ -37,7 +37,7 @@ def get_swap(
 
 
 @router.patch("/swaps/{swap_id}", response_model=Swap)
-def update_swap(swap_id: int, params: SwapUpdate, session: Session = Depends(get_session)) -> Swap:
+def update_swap(swap_id: int, params: SwapUpdate, session: Session = Depends(get_session)):
     try:
         return swaps.update_swap(session, swap_id, params)
     except swaps.SwapNotFoundError as exc:
@@ -45,7 +45,7 @@ def update_swap(swap_id: int, params: SwapUpdate, session: Session = Depends(get
 
 
 @router.delete("/swaps/{swap_id}", response_model=Swap) 
-def delete_swap(swap_id: int, session: Session = Depends(get_session)) -> Swap:
+def delete_swap(swap_id: int, session: Session = Depends(get_session)):
     try:
         return swaps.delete_swap(session, swap_id)
     except swaps.SwapNotFoundError as exc:

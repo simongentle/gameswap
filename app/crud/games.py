@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Game as DBGame
-from app.schemas.game import Game, GameCreate, GameUpdate
+from app.models import Game 
+from app.schemas.game import GameCreate, GameUpdate
 
 
 class GameNotFoundError(Exception):
@@ -10,25 +10,25 @@ class GameNotFoundError(Exception):
 
 
 def get_game(session: Session, game_id: int) -> Game:
-    game = session.get(DBGame, game_id)
+    game = session.get(Game, game_id)
     if game is None:
         raise GameNotFoundError
     return game
 
 
 def get_games(session: Session) -> list[Game]:
-    games = session.query(DBGame).all()
+    games = session.query(Game).all()
     return games
 
 
 def get_games_by_title(session: Session, title: str) -> list[Game]:
-    result = session.execute(select(DBGame).where(DBGame.title == title))
+    result = session.execute(select(Game).where(Game.title == title))
     games = result.scalars().all()
     return games
 
 
 def create_game(session: Session, params: GameCreate) -> Game:
-    game = DBGame(**params.model_dump())
+    game = Game(**params.model_dump())
     session.add(game)
     session.commit()
     session.refresh(game)
