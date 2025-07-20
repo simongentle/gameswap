@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Game as DBGame
+from app.models import Game as DBGame, Gamer as DBGamer
 
 
 def test_create_game(client: TestClient) -> None:
@@ -59,6 +59,24 @@ def test_get_games_by_title(session: Session, client: TestClient) -> None:
 
     assert response.status_code == 200, response.text
     assert len(data) == 1
+
+
+def test_get_gamers_for_given_game(session: Session, client: TestClient) -> None:
+    game = DBGame(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    gamer1 = DBGamer(name="Player One", email="press@start.com")
+    gamer2 = DBGamer(name="Player Two", email="insert@coin.com")
+    session.add_all([game, gamer1, gamer2])
+    session.commit()
+
+    game.gamers.append(gamer1)
+    game.gamers.append(gamer2)
+    session.commit()
+
+    response = client.get(f"/games/{game.id}/gamers")
+    data = response.json()
+
+    assert response.status_code == 200, response.text
+    assert len(data) == 2
 
 
 def test_update_game(session: Session, client: TestClient) -> None:

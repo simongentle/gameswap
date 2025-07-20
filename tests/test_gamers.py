@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Gamer as DBGamer
+from app.models import Game as DBGame, Gamer as DBGamer
 
 
 def test_create_gamer(client: TestClient) -> None:
@@ -63,6 +63,24 @@ def test_gamer_email_not_unique(session: Session, client: TestClient) -> None:
     }
     response = client.post("/gamers", json=gamer2_data)
     assert response.status_code == 422, response.text
+
+
+def test_get_games_for_given_gamer(session: Session, client: TestClient) -> None:
+    gamer = DBGamer(name="Player One", email="press@start.com")
+    game1 = DBGame(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game2 = DBGame(title="Super Mario Land", platform="GAME BOY")
+    session.add_all([gamer, game1, game2])
+    session.commit()
+
+    gamer.games.append(game1)
+    gamer.games.append(game2)
+    session.commit()
+
+    response = client.get(f"/gamers/{gamer.id}/games")
+    data = response.json()
+
+    assert response.status_code == 200, response.text
+    assert len(data) == 2
 
 
 def test_update_gamer(session: Session, client: TestClient) -> None:

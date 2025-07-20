@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 import app.crud.games as games
 from app.dependencies.database import get_session
 from app.schemas.game import Game, GameCreate, GameUpdate
+from app.schemas.gamer import Gamer 
 
 
 router = APIRouter()
@@ -27,6 +28,15 @@ def get_game(game_id: int, session: Session = Depends(get_session)) -> Game:
         return games.get_game(session, game_id)
     except games.GameNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
+    
+
+@router.get("/games/{game_id}/gamers", response_model=list[Gamer]) 
+def get_gamers_for_given_game(game_id: int, session: Session = Depends(get_session)) -> list[Gamer]:
+    try:
+        game = games.get_game(session, game_id)
+    except games.GameNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    return game.gamers
 
 
 @router.patch("/games/{game_id}", response_model=Game)

@@ -1,5 +1,5 @@
 import datetime as dt
-from sqlalchemy import ForeignKey
+from sqlalchemy import Column, ForeignKey, Table
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -10,11 +10,19 @@ class Base(DeclarativeBase):
     pass
 
 
+game_to_gamer = Table('game_to_gamer', Base.metadata,
+    Column('game_id', ForeignKey('game.id'), primary_key=True),
+    Column('gamer_id', ForeignKey('gamer.id'), primary_key=True)
+)
+
+
 class Game(Base):
     __tablename__ = "game"
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(index=True)
     platform: Mapped[str]
+
+    gamers: Mapped[list["Gamer"]] = relationship(secondary=game_to_gamer, back_populates="games")
 
     swap_id: Mapped[int | None] = mapped_column(ForeignKey("swap.id"))
     swap: Mapped["Swap | None"] = relationship(back_populates="games")
@@ -25,6 +33,8 @@ class Gamer(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] 
     email: Mapped[str] = mapped_column(unique=True)
+
+    games: Mapped[list[Game]] = relationship(secondary=game_to_gamer, back_populates="gamers")
 
 
 class Swap(Base):
