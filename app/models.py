@@ -20,6 +20,13 @@ class Game(Base):
     swap: Mapped["Swap | None"] = relationship(back_populates="games")
 
 
+class Gamer(Base):
+    __tablename__ = "gamer"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] 
+    email: Mapped[str] = mapped_column(unique=True)
+
+
 class Swap(Base):
     __tablename__ = "swap"
     id: Mapped[int] = mapped_column(primary_key=True)
