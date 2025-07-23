@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 import app.crud.gamers as gamers
+import app.crud.games as games
+import app.crud.mixed as mixed
 from app.dependencies.database import get_session
 from app.schemas.game import Game
 from app.schemas.gamer import Gamer, GamerCreate, GamerUpdate
@@ -47,6 +49,18 @@ def update_gamer(gamer_id: int, params: GamerUpdate, session: Session = Depends(
     except gamers.GamerNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
     except gamers.DuplicateGamerError as exc:
+        raise HTTPException(status_code=422) from exc
+    
+
+@router.put("/gamers/{gamer_id}/games/{game_id}", response_model=Gamer)
+def assign_game_to_gamer(gamer_id: int, game_id: int, session: Session = Depends(get_session)):
+    try:
+        return mixed.assign_game_to_gamer(session, gamer_id, game_id)
+    except gamers.GamerNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    except games.GameNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    except mixed.DuplicateAssignmentError as exc:
         raise HTTPException(status_code=422) from exc
 
 

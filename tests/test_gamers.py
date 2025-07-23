@@ -99,6 +99,23 @@ def test_update_gamer(session: Session, client: TestClient) -> None:
         and data["email"] == gamer.email
     )
 
+def test_assign_game_to_gamer(session: Session, client: TestClient) -> None:
+    gamer = Gamer(name="Player One", email="press@start.com")
+    session.add(gamer)
+    session.commit()
+
+    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    session.add(game)
+    session.commit()
+
+    # Initial assignment should pass:
+    response = client.put(f"/gamers/{gamer.id}/games/{game.id}")
+    assert response.status_code == 200, response.text
+
+    # Repeated assignment should fail:
+    response = client.put(f"/gamers/{gamer.id}/games/{game.id}")
+    assert response.status_code == 422, response.text
+
 
 def test_delete_gamer(session: Session, client: TestClient) -> None:
     gamer = Gamer(name="Player One", email="press@start.com")
