@@ -1,11 +1,17 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.crud.gamers import get_gamer
 from app.models import Game 
 from app.schemas.game import GameCreate, GameUpdate
 
 
 class GameNotFoundError(Exception):
+    pass
+
+
+class GamerAlreadyAssignedToGameError(Exception):
     pass
 
 
@@ -41,6 +47,18 @@ def update_game(session: Session, game_id: int, params: GameUpdate) -> Game:
         setattr(game, attr, value)
     session.add(game)
     session.commit()
+    session.refresh(game)
+    return game
+
+
+def assign_gamer_to_game(session: Session, game_id: int, gamer_id: int) -> Game:    
+    game = get_game(session, game_id)
+    gamer = get_gamer(session, gamer_id)
+    game.gamers.append(gamer)
+    try:
+        session.commit()
+    except IntegrityError as exc:
+        raise GamerAlreadyAssignedToGameError from exc
     session.refresh(game)
     return game
 

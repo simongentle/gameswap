@@ -96,6 +96,24 @@ def test_update_game(session: Session, client: TestClient) -> None:
     )
 
 
+def test_assign_gamer_to_game(session: Session, client: TestClient) -> None:
+    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    session.add(game)
+    session.commit()
+
+    gamer = Gamer(name="Player One", email="press@start.com")
+    session.add(gamer)
+    session.commit()
+
+    # Initial assignment should pass:
+    response = client.put(f"/games/{game.id}/gamers/{gamer.id}")
+    assert response.status_code == 200, response.text
+
+    # Repeated assignment should fail:
+    response = client.put(f"/games/{game.id}/gamers/{gamer.id}")
+    assert response.status_code == 422, response.text
+
+
 def test_delete_game(session: Session, client: TestClient) -> None:
     game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
     session.add(game)
