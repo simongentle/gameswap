@@ -46,20 +46,6 @@ def test_get_swap(session: Session, client: TestClient) -> None:
     session.add(swap)
     session.commit()
 
-    lent_game = Game(
-        title="Sonic The Hedehog", 
-        platform="SEGA Mega Drive", 
-        swap_id=swap.id,
-    )
-    session.add(lent_game)
-    borrowed_game = Game(
-        title="Super Mario Land", 
-        platform="GAME BOY", 
-        swap_id=swap.id,
-    )
-    session.add(borrowed_game)
-    session.commit()
-
     response = client.get(f"/swaps/{swap.id}")
     data = response.json()
 
@@ -68,8 +54,35 @@ def test_get_swap(session: Session, client: TestClient) -> None:
         data["id"] == swap.id
         and data["friend"] == swap.friend
         and data["return_date"] == swap.return_date.strftime("%Y-%m-%d")
-        and len(data["games"]) == 2 
     )
+
+
+def test_get_games_for_given_swap(session: Session, client: TestClient) -> None:
+    swap = Swap(
+        friend="Jeroen", 
+        return_date=dt.date.today() + dt.timedelta(weeks=2),
+    )
+    session.add(swap)
+    session.commit()
+
+    lent_game = Game(
+        title="Sonic The Hedehog", 
+        platform="SEGA Mega Drive", 
+        swap_id=swap.id,
+    )
+    borrowed_game = Game(
+        title="Super Mario Land", 
+        platform="GAME BOY", 
+        swap_id=swap.id,
+    )
+    session.add_all([lent_game, borrowed_game])
+    session.commit()
+
+    response = client.get(f"/swaps/{swap.id}/games")
+    data = response.json()
+
+    assert response.status_code == 200, response.text
+    assert len(data) == 2
 
 
 def test_get_swap_not_exists(client: TestClient) -> None:

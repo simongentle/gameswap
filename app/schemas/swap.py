@@ -1,7 +1,4 @@
-import datetime as dt
-from pydantic import BaseModel, Field, FutureDate
-
-from app.schemas.game import Game
+from pydantic import BaseModel, FutureDate
 
 
 class SwapBase(BaseModel):
@@ -20,7 +17,3 @@ class SwapUpdate(BaseModel):
 
 class Swap(SwapBase):
     id: int
-
-
-class SwapWithGames(Swap):
-    games: list[Game] = Field(default_factory=list)
