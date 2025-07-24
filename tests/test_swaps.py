@@ -122,11 +122,30 @@ def test_delete_swap(session: Session, client: TestClient) -> None:
     session.add(swap)
     session.commit()
 
+    lent_game = Game(
+        title="Sonic The Hedehog", 
+        platform="SEGA Mega Drive", 
+        swap_id=swap.id,
+    )
+    borrowed_game = Game(
+        title="Super Mario Land", 
+        platform="GAME BOY", 
+        swap_id=swap.id,
+    )
+    session.add_all([lent_game, borrowed_game])
+    session.commit()
+
     response = client.delete(f"/swaps/{swap.id}")
     assert response.status_code == 200, response.text
 
     swap_in_db = session.get(Swap, swap.id)
     assert swap_in_db is None
+
+    response = client.get(f"/games")
+    data = response.json()
+
+    assert response.status_code == 200, response.text
+    assert len(data) == 2
     
 
 def test_delete_swap_not_exists(client: TestClient) -> None:
