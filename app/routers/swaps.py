@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+import app.crud.gamers as gamers
 import app.crud.swaps as swaps
 from app.dependencies.database import get_session
 from app.dependencies.notifications import NotificationService, get_notification_service
@@ -55,6 +56,18 @@ def update_swap(swap_id: int, params: SwapUpdate, session: Session = Depends(get
     try:
         return swaps.update_swap(session, swap_id, params)
     except swaps.SwapNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    
+
+@router.put("/swaps/{swap_id}/gamers/{gamer_id}", response_model=Swap)
+def assign_gamer_to_game(swap_id: int, gamer_id: int, session: Session = Depends(get_session)):
+    try:
+        return swaps.assign_gamer_to_swap(session, swap_id, gamer_id)
+    except swaps.SwapNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    except swaps.MaxGamersInSwapError as exc:
+        raise HTTPException(status_code=422) from exc
+    except gamers.GamerNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
 
 

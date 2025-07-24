@@ -1,13 +1,17 @@
-import datetime as dt
 from sqlalchemy.orm import Session
 from typing import Protocol
 
+from app.crud.gamers import get_gamer
 from app.dependencies.notifications import Event, Notification
 from app.models import Swap
 from app.schemas.swap import SwapCreate, SwapUpdate
 
 
 class SwapNotFoundError(Exception):
+    pass
+
+
+class MaxGamersInSwapError(Exception):
     pass
 
 
@@ -78,4 +82,15 @@ def delete_swap(session: Session, swap_id: int) -> Swap:
     swap = find_swap(session, swap_id)
     session.delete(swap)
     session.commit()
+    return swap
+
+
+def assign_gamer_to_swap(session: Session, swap_id: int, gamer_id: int) -> Swap:    
+    swap = find_swap(session, swap_id)
+    if swap.has_max_gamers():
+        raise MaxGamersInSwapError
+    gamer = get_gamer(session, gamer_id)
+    swap.gamers.append(gamer)
+    session.commit()
+    session.refresh(swap)
     return swap

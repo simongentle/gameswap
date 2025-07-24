@@ -4,13 +4,14 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 SWAP_DUE_THRESHOLD_IN_DAYS = 7
+MAX_GAMERS_IN_SWAP = 2
 
 
 class Base(DeclarativeBase):
     pass
 
 
-game_to_gamer = Table('game_to_gamer', Base.metadata,
+game_gamer_link = Table('game_gamer_link', Base.metadata,
     Column('game_id', ForeignKey('game.id'), primary_key=True),
     Column('gamer_id', ForeignKey('gamer.id'), primary_key=True)
 )
@@ -22,7 +23,7 @@ class Game(Base):
     title: Mapped[str] = mapped_column(index=True)
     platform: Mapped[str]
 
-    gamers: Mapped[list["Gamer"]] = relationship(secondary=game_to_gamer, back_populates="games")
+    gamers: Mapped[list["Gamer"]] = relationship(secondary=game_gamer_link, back_populates="games")
 
     swap_id: Mapped[int | None] = mapped_column(ForeignKey("swap.id"))
     swap: Mapped["Swap | None"] = relationship(back_populates="games")
@@ -34,7 +35,10 @@ class Gamer(Base):
     name: Mapped[str] 
     email: Mapped[str] = mapped_column(unique=True)
 
-    games: Mapped[list[Game]] = relationship(secondary=game_to_gamer, back_populates="gamers")
+    games: Mapped[list[Game]] = relationship(secondary=game_gamer_link, back_populates="gamers")
+
+    swap_id: Mapped[int | None] = mapped_column(ForeignKey("swap.id"))
+    swap: Mapped["Swap | None"] = relationship(back_populates="gamers")
 
 
 class Swap(Base):
@@ -44,7 +48,14 @@ class Swap(Base):
     return_date: Mapped[dt.date] 
 
     games: Mapped[list[Game]] = relationship(back_populates="swap")
+    gamers: Mapped[list[Gamer]] = relationship(back_populates="swap")
 
     def is_due(self) -> bool:
         days_remaining = (self.return_date - dt.date.today()).days
         return days_remaining <= SWAP_DUE_THRESHOLD_IN_DAYS
+    
+    def has_max_gamers(self) -> bool:
+        if len(self.gamers) >= MAX_GAMERS_IN_SWAP:
+            return True
+        return False
+    
