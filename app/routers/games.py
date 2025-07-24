@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 import app.crud.gamers as gamers
@@ -66,4 +66,16 @@ def delete_game(game_id: int, session: Session = Depends(get_session)):
     try:
         return games.delete_game(session, game_id)
     except games.GameNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    
+
+@router.delete("/games/{game_id}/gamers/{gamer_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_gamer_from_game(game_id: int, gamer_id: int, session: Session = Depends(get_session)):
+    try:
+        mixed.remove_gamer_from_game(session, game_id, gamer_id)
+    except games.GameNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    except gamers.GamerNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    except mixed.GameNotLinkedToGamerError as exc:
         raise HTTPException(status_code=404) from exc

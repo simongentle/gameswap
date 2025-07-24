@@ -132,3 +132,21 @@ def test_delete_gamer(session: Session, client: TestClient) -> None:
 def test_delete_gamer_not_exists(client: TestClient) -> None:
     response = client.delete(f"/gamers/{0}")
     assert response.status_code == 404, response.text
+
+
+def test_remove_game_from_gamer(session: Session, client: TestClient) -> None:
+    gamer = Gamer(name="Player One", email="press@start.com")
+    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    session.add_all([gamer, game])
+    session.commit()
+    gamer.games.append(game)
+    session.commit()
+
+    response = client.delete(f"/gamers/{gamer.id}/games/{game.id}")
+    assert response.status_code == 204, response.text
+
+    game_in_gamers = game in gamer.games
+    assert game_in_gamers is False
+
+    response = client.delete(f"/gamers/{gamer.id}/gamer/{game.id}")
+    assert response.status_code == 404, response.text
