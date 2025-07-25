@@ -122,11 +122,11 @@ def test_assign_gamer_to_swap(session: Session, client: TestClient) -> None:
     session.add(swap)
     session.commit()
 
-    gamer1 = Gamer(name="Player One", email="press@start.com")
-    session.add(gamer1)
+    gamer = Gamer(name="Player One", email="press@start.com")
+    session.add(gamer)
     session.commit()
 
-    response = client.put(f"/swaps/{swap.id}/gamers/{gamer1.id}")
+    response = client.put(f"/swaps/{swap.id}/gamers/{gamer.id}")
     assert response.status_code == 200, response.text
     assert len(swap.gamers) == 1
 
@@ -190,3 +190,28 @@ def test_delete_swap(session: Session, client: TestClient) -> None:
 def test_delete_swap_not_exists(client: TestClient) -> None:
     response = client.delete(f"/swaps/{0}")
     assert response.status_code == 404, response.text
+
+
+def test_remove_gamer_from_swap(session: Session, client: TestClient) -> None:
+    swap = Swap(
+        friend="Jeroen", 
+        return_date=dt.date.today() + dt.timedelta(weeks=2),
+    )
+    session.add(swap)
+    session.commit()
+
+    gamer = Gamer(name="Player One", email="press@start.com")
+    session.add(gamer)
+    session.commit()
+
+    swap.gamers.append(gamer)
+    session.commit()
+
+    response = client.delete(f"/swaps/{swap.id}/gamers/{gamer.id}")
+    assert response.status_code == 204, response.text
+
+    gamer_in_swap = gamer in swap.gamers
+    assert gamer_in_swap is False
+
+    response = client.delete(f"/swaps/{swap.id}/gamers/{gamer.id}")
+    assert response.status_code == 422, response.text

@@ -78,4 +78,4 @@ def remove_gamer_from_game(game_id: int, gamer_id: int, session: Session = Depen
     except gamers.GamerNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
     except gamegamerlink.GameNotLinkedToGamerError as exc:
-        raise HTTPException(status_code=404) from exc
+        raise HTTPException(status_code=422) from exc

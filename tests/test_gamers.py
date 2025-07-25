@@ -148,5 +148,5 @@ def test_remove_game_from_gamer(session: Session, client: TestClient) -> None:
     game_in_gamers = game in gamer.games
     assert game_in_gamers is False
 
-    response = client.delete(f"/gamers/{gamer.id}/gamer/{game.id}")
-    assert response.status_code == 404, response.text
+    response = client.delete(f"/gamers/{gamer.id}/games/{game.id}")
+    assert response.status_code == 422, response.text
