@@ -6,6 +6,7 @@ import app.crud.swaps as swaps
 from app.dependencies.database import get_session
 from app.dependencies.notifications import NotificationService, get_notification_service
 from app.schemas.game import Game
+from app.schemas.gamer import Gamer
 from app.schemas.swap import Swap, SwapCreate, SwapUpdate
 
 
@@ -37,6 +38,19 @@ def get_swap(
     except swaps.SwapNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
     
+
+@router.get("/swaps/{swap_id}/gamers", response_model=list[Gamer]) 
+def get_gamers_for_given_swap(
+    swap_id: int, 
+    session: Session = Depends(get_session),
+    notification_service: NotificationService = Depends(get_notification_service),
+):
+    try:
+        swap = swaps.get_swap(session, swap_id, notification_service)
+    except swaps.SwapNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    return swap.gamers
+
 
 @router.get("/swaps/{swap_id}/games", response_model=list[Game]) 
 def get_games_for_given_swap(

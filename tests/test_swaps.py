@@ -57,6 +57,28 @@ def test_get_swap(session: Session, client: TestClient) -> None:
     )
 
 
+def test_get_gamers_for_given_swap(session: Session, client: TestClient) -> None:
+    swap = Swap(
+        friend="Jeroen", 
+        return_date=dt.date.today() + dt.timedelta(weeks=2),
+    )
+    session.add(swap)
+    session.commit()
+
+    gamer1 = Gamer(name="Player One", email="press@start.com")
+    gamer2 = Gamer(name="Player Two", email="insert@coin.com")
+    session.add_all([gamer1, gamer2])
+    session.commit()
+
+    swap.gamers = [gamer1, gamer2]
+
+    response = client.get(f"/swaps/{swap.id}/gamers")
+    data = response.json()
+
+    assert response.status_code == 200, response.text
+    assert len(data) == 2
+
+
 def test_get_games_for_given_swap(session: Session, client: TestClient) -> None:
     swap = Swap(
         friend="Jeroen", 
