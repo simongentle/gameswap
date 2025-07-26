@@ -95,24 +95,6 @@ def test_update_game(session: Session, client: TestClient) -> None:
     )
 
 
-def test_assign_gamer_to_game(session: Session, client: TestClient) -> None:
-    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
-    session.add(game)
-    session.commit()
-
-    gamer = Gamer(name="Player One", email="press@start.com")
-    session.add(gamer)
-    session.commit()
-
-    # Initial assignment should pass:
-    response = client.put(f"/games/{game.id}/gamers/{gamer.id}")
-    assert response.status_code == 200, response.text
-
-    # Repeated assignment should fail:
-    response = client.put(f"/games/{game.id}/gamers/{gamer.id}")
-    assert response.status_code == 422, response.text
-
-
 def test_delete_game(session: Session, client: TestClient) -> None:
     game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     session.add(game)
@@ -128,21 +110,3 @@ def test_delete_game(session: Session, client: TestClient) -> None:
 def test_delete_game_not_exists(client: TestClient) -> None:
     response = client.delete(f"/games/{0}")
     assert response.status_code == 404, response.text
-
-
-def test_remove_gamer_from_game(session: Session, client: TestClient) -> None:
-    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
-    gamer = Gamer(name="Player One", email="press@start.com")
-    session.add_all([game, gamer])
-    session.commit()
-    game.gamers.append(gamer)
-    session.commit()
-
-    response = client.delete(f"/games/{game.id}/gamers/{gamer.id}")
-    assert response.status_code == 204, response.text
-
-    gamer_in_game = gamer in game.gamers
-    assert gamer_in_game is False
-
-    response = client.delete(f"/games/{game.id}/gamers/{gamer.id}")
-    assert response.status_code == 422, response.text

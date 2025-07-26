@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-import app.crud.gamers as gamers
 import app.crud.games as games
-import app.crud.gamegamerlink as gamegamerlink
 from app.dependencies.database import get_session
 from app.schemas.game import Game, GameCreate, GameUpdate
 from app.schemas.gamer import Gamer 
@@ -55,27 +53,3 @@ def get_gamers_for_given_game(game_id: int, session: Session = Depends(get_sessi
     except games.GameNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
     return game.gamers
-
-
-@router.put("/games/{game_id}/gamers/{gamer_id}", response_model=Game)
-def assign_gamer_to_game(game_id: int, gamer_id: int, session: Session = Depends(get_session)):
-    try:
-        return gamegamerlink.assign_gamer_to_game(session, game_id, gamer_id)
-    except games.GameNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    except gamers.GamerNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    except gamegamerlink.DuplicateAssignmentError as exc:
-        raise HTTPException(status_code=422) from exc
-    
-
-@router.delete("/games/{game_id}/gamers/{gamer_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_gamer_from_game(game_id: int, gamer_id: int, session: Session = Depends(get_session)):
-    try:
-        gamegamerlink.remove_gamer_from_game(session, game_id, gamer_id)
-    except games.GameNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    except gamers.GamerNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    except gamegamerlink.GameNotLinkedToGamerError as exc:
-        raise HTTPException(status_code=422) from exc
