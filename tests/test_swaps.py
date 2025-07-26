@@ -230,14 +230,27 @@ def test_remove_gamer_from_swap(session: Session, client: TestClient) -> None:
     session.add(gamer)
     session.commit()
 
+    game1 = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game2 = Game(title="Super Mario Land", platform="GAME BOY")
+    session.add_all([game1, game2])
+    session.commit()
+
+    for game in [game1, game2]:
+        gamer.games.append(game)
+    session.commit()
+
     swap.gamers.append(gamer)
+    session.commit()
+
+    for game in [game1, game2]:
+        swap.games.append(game)
     session.commit()
 
     response = client.delete(f"/swaps/{swap.id}/gamers/{gamer.id}")
     assert response.status_code == 204, response.text
-
-    gamer_in_swap = gamer in swap.gamers
-    assert gamer_in_swap is False
+    
+    assert gamer not in swap.gamers
+    assert len(swap.games) == 0
 
     response = client.delete(f"/swaps/{swap.id}/gamers/{gamer.id}")
     assert response.status_code == 422, response.text
