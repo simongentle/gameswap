@@ -6,7 +6,7 @@ from app.models import Game, Gamer
 
 def test_create_game(client: TestClient) -> None:
     game_data = {
-        "title": "Sonic The Hedehog",
+        "title": "Sonic The Hedgehog",
         "platform": "SEGA Mega Drive",
     }
     response = client.post("/games", json=game_data)
@@ -22,12 +22,12 @@ def test_create_game(client: TestClient) -> None:
 
 
 def test_create_game_incomplete(client: TestClient) -> None:
-    response = client.post("/games", json={"title": "Sonic The Hedehog"})
+    response = client.post("/games", json={"title": "Sonic The Hedgehog"})
     assert response.status_code == 422, response.text
 
 
 def test_get_game(session: Session, client: TestClient) -> None:
-    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     session.add(game)
     session.commit()
 
@@ -48,7 +48,7 @@ def test_get_game_not_exists(client: TestClient) -> None:
 
 
 def test_get_games_by_title(session: Session, client: TestClient) -> None:
-    game_1 = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game_1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     session.add(game_1)
     game_2 = Game(title="Super Mario Land", platform="GAME BOY")
     session.add(game_2)
@@ -62,7 +62,7 @@ def test_get_games_by_title(session: Session, client: TestClient) -> None:
 
 
 def test_get_gamers_for_given_game(session: Session, client: TestClient) -> None:
-    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     gamer1 = Gamer(name="Player One", email="press@start.com")
     gamer2 = Gamer(name="Player Two", email="insert@coin.com")
     session.add_all([game, gamer1, gamer2])
@@ -80,7 +80,7 @@ def test_get_gamers_for_given_game(session: Session, client: TestClient) -> None
 
 
 def test_update_game(session: Session, client: TestClient) -> None:
-    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     session.add(game)
     session.commit()
 
@@ -97,7 +97,7 @@ def test_update_game(session: Session, client: TestClient) -> None:
 
 
 def test_assign_gamer_to_game(session: Session, client: TestClient) -> None:
-    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     session.add(game)
     session.commit()
 
@@ -115,7 +115,7 @@ def test_assign_gamer_to_game(session: Session, client: TestClient) -> None:
 
 
 def test_delete_game(session: Session, client: TestClient) -> None:
-    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     session.add(game)
     session.commit()
 
@@ -132,7 +132,7 @@ def test_delete_game_not_exists(client: TestClient) -> None:
 
 
 def test_remove_gamer_from_game(session: Session, client: TestClient) -> None:
-    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     gamer = Gamer(name="Player One", email="press@start.com")
     session.add_all([game, gamer])
     session.commit()

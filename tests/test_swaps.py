@@ -88,7 +88,7 @@ def test_get_games_for_given_swap(session: Session, client: TestClient) -> None:
     session.commit()
 
     lent_game = Game(
-        title="Sonic The Hedehog", 
+        title="Sonic The Hedgehog", 
         platform="SEGA Mega Drive", 
         swap_id=swap.id,
     )
@@ -189,7 +189,7 @@ def test_assign_game_of_gamer_to_swap(session: Session, client: TestClient) -> N
 
     gamer = Gamer(name="Player One", email="press@start.com")
     session.add(gamer)
-    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     session.add(game)
     gamer.games.append(game)
     session.commit()
@@ -211,7 +211,7 @@ def test_delete_swap(session: Session, client: TestClient) -> None:
     session.commit()
 
     lent_game = Game(
-        title="Sonic The Hedehog", 
+        title="Sonic The Hedgehog", 
         platform="SEGA Mega Drive", 
         swap_id=swap.id,
     )
@@ -253,7 +253,7 @@ def test_remove_gamer_from_swap(session: Session, client: TestClient) -> None:
     session.add(gamer)
     session.commit()
 
-    game1 = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     game2 = Game(title="Super Mario Land", platform="GAME BOY")
     session.add_all([game1, game2])
     session.commit()

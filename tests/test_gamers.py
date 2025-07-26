@@ -67,7 +67,7 @@ def test_gamer_email_not_unique(session: Session, client: TestClient) -> None:
 
 def test_get_games_for_given_gamer(session: Session, client: TestClient) -> None:
     gamer = Gamer(name="Player One", email="press@start.com")
-    game1 = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     game2 = Game(title="Super Mario Land", platform="GAME BOY")
     session.add_all([gamer, game1, game2])
     session.commit()
@@ -104,7 +104,7 @@ def test_assign_game_to_gamer(session: Session, client: TestClient) -> None:
     session.add(gamer)
     session.commit()
 
-    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     session.add(game)
     session.commit()
 
@@ -136,7 +136,7 @@ def test_delete_gamer_not_exists(client: TestClient) -> None:
 
 def test_remove_game_from_gamer(session: Session, client: TestClient) -> None:
     gamer = Gamer(name="Player One", email="press@start.com")
-    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     session.add_all([gamer, game])
     session.commit()
     gamer.games.append(game)
