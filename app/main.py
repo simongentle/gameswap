@@ -29,8 +29,8 @@ def read_root():
     return "The server is running."
 
 
-app.include_router(games.router, tags=["games"])
 app.include_router(gamers.router, tags=["gamers"])
+app.include_router(games.router, tags=["games"])
 app.include_router(swaps.router, tags=["swaps"])
 
 
