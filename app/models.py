@@ -43,7 +43,6 @@ class Gamer(Base):
 class Swap(Base):
     __tablename__ = "swap"
     id: Mapped[int] = mapped_column(primary_key=True)
-    friend: Mapped[str]
     return_date: Mapped[dt.date] 
 
     games: Mapped[list[Game]] = relationship(back_populates="swap")

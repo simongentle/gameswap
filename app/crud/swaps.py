@@ -47,7 +47,7 @@ def get_swap(
         notification_service.post(
             Notification(
                 event=Event.SWAP_DUE,
-                message=f"Warning: Swap with {swap.friend} due by {swap.return_date}!"
+                message=f"Warning: Swap with id {swap.id} due by {swap.return_date}!"
             )
         )
     return swap
@@ -71,7 +71,7 @@ def create_swap(
     notification_service.post(
         Notification(
             event=Event.SWAP_CREATED,
-            message=f"Created swap with {swap.friend}! Return games by {swap.return_date}."
+            message=f"Created swap with id {swap.id}! Return games by {swap.return_date}."
         )
     )
 

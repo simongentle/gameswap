@@ -9,7 +9,6 @@ from app.models import Game, Gamer, Swap
 def test_create_swap(client: TestClient) -> None:
     return_date = dt.date.today() + dt.timedelta(weeks=2)
     swap_data = {
-        "friend": "Jeroen",
         "return_date": return_date.strftime("%Y-%m-%d"),
     }
     response = client.post("/swaps", json=swap_data)
@@ -18,20 +17,18 @@ def test_create_swap(client: TestClient) -> None:
     assert response.status_code == 200, response.text
     assert (
         "id" in data
-        and data["friend"] == swap_data["friend"]
         and data["return_date"] == swap_data["return_date"]
     )
 
 
 def test_create_swap_incomplete(client: TestClient) -> None:
-    response = client.post("/swaps", json={"friend": "Jeroen"})
+    response = client.post("/swaps", json={})
     assert response.status_code == 422, response.text
 
 
 def test_create_swap_past_return_date(client: TestClient) -> None:
     return_date = dt.date.today() - dt.timedelta(weeks=2)
     swap_data = {
-        "friend": "Jeroen",
         "return_date": return_date.strftime("%Y-%m-%d"),
     }
     response = client.post("/swaps", json=swap_data)
@@ -39,10 +36,7 @@ def test_create_swap_past_return_date(client: TestClient) -> None:
 
 
 def test_get_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(
-        friend="Jeroen", 
-        return_date=dt.date.today() + dt.timedelta(weeks=2),
-    )
+    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     session.add(swap)
     session.commit()
 
@@ -52,16 +46,12 @@ def test_get_swap(session: Session, client: TestClient) -> None:
     assert response.status_code == 200, response.text
     assert (
         data["id"] == swap.id
-        and data["friend"] == swap.friend
         and data["return_date"] == swap.return_date.strftime("%Y-%m-%d")
     )
 
 
 def test_get_gamers_for_given_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(
-        friend="Jeroen", 
-        return_date=dt.date.today() + dt.timedelta(weeks=2),
-    )
+    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     session.add(swap)
     session.commit()
 
@@ -80,10 +70,7 @@ def test_get_gamers_for_given_swap(session: Session, client: TestClient) -> None
 
 
 def test_get_games_for_given_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(
-        friend="Jeroen", 
-        return_date=dt.date.today() + dt.timedelta(weeks=2),
-    )
+    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     session.add(swap)
     session.commit()
 
@@ -114,7 +101,7 @@ def test_get_swap_not_exists(client: TestClient) -> None:
 
 def test_update_swap(session: Session, client: TestClient) -> None:
     return_date = dt.date.today() + dt.timedelta(weeks=2)
-    swap = Swap(friend="Jeroen", return_date=return_date)
+    swap = Swap(return_date=return_date)
     session.add(swap)
     session.commit()
 
@@ -126,9 +113,7 @@ def test_update_swap(session: Session, client: TestClient) -> None:
     data = response.json()
     
     assert response.status_code == 200, response.text
-    assert (
-        data["id"] == swap.id
-        and data["friend"] == swap.friend)
+    assert data["id"] == swap.id
     assert(
         data["return_date"] 
         == later_return_date.strftime("%Y-%m-%d") 
@@ -137,10 +122,7 @@ def test_update_swap(session: Session, client: TestClient) -> None:
     
 
 def test_assign_gamer_to_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(
-        friend="Jeroen", 
-        return_date=dt.date.today() + dt.timedelta(weeks=2),
-    )
+    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     session.add(swap)
     session.commit()
 
@@ -154,10 +136,7 @@ def test_assign_gamer_to_swap(session: Session, client: TestClient) -> None:
 
 
 def test_cannot_exceed_two_gamers_in_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(
-        friend="Jeroen", 
-        return_date=dt.date.today() + dt.timedelta(weeks=2),
-    )
+    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     session.add(swap)
     session.commit()
 
@@ -180,10 +159,7 @@ def test_cannot_exceed_two_gamers_in_swap(session: Session, client: TestClient) 
 
 
 def test_assign_game_of_gamer_to_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(
-        friend="Jeroen", 
-        return_date=dt.date.today() + dt.timedelta(weeks=2),
-    )
+    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     session.add(swap)
     session.commit()
 
@@ -203,10 +179,7 @@ def test_assign_game_of_gamer_to_swap(session: Session, client: TestClient) -> N
 
 
 def test_delete_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(
-        friend="Jeroen", 
-        return_date=dt.date.today() + dt.timedelta(weeks=2),
-    )
+    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     session.add(swap)
     session.commit()
 
@@ -242,10 +215,7 @@ def test_delete_swap_not_exists(client: TestClient) -> None:
 
 
 def test_remove_gamer_from_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(
-        friend="Jeroen", 
-        return_date=dt.date.today() + dt.timedelta(weeks=2),
-    )
+    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     session.add(swap)
     session.commit()
 
@@ -280,10 +250,7 @@ def test_remove_gamer_from_swap(session: Session, client: TestClient) -> None:
 
 
 def test_remove_game_of_gamer_from_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(
-        friend="Jeroen", 
-        return_date=dt.date.today() + dt.timedelta(weeks=2),
-    )
+    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     session.add(swap)
     session.commit()
 
