@@ -179,6 +179,29 @@ def test_cannot_exceed_two_gamers_in_swap(session: Session, client: TestClient) 
     assert response.status_code == 422, response.text
 
 
+def test_assign_game_of_gamer_to_swap(session: Session, client: TestClient) -> None:
+    swap = Swap(
+        friend="Jeroen", 
+        return_date=dt.date.today() + dt.timedelta(weeks=2),
+    )
+    session.add(swap)
+    session.commit()
+
+    gamer = Gamer(name="Player One", email="press@start.com")
+    session.add(gamer)
+    game = Game(title="Sonic The Hedehog", platform="SEGA Mega Drive")
+    session.add(game)
+    gamer.games.append(game)
+    session.commit()
+
+    swap.gamers.append(gamer)
+    session.commit()
+
+    response = client.put(f"/swaps/{swap.id}/gamers/{gamer.id}/games/{game.id}")
+    assert response.status_code == 200, response.text
+    assert len(swap.games) == 1
+
+
 def test_delete_swap(session: Session, client: TestClient) -> None:
     swap = Swap(
         friend="Jeroen", 
