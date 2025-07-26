@@ -51,7 +51,7 @@ def delete_gamer(gamer_id: int, session: Session = Depends(get_session)):
     
 
 @router.get("/gamers/{gamer_id}/games", response_model=list[Game]) 
-def get_games_for_given_gamer(gamer_id: int, session: Session = Depends(get_session)):
+def get_games_owned_by_gamer(gamer_id: int, session: Session = Depends(get_session)):
     try:
         gamer = gamers.get_gamer(session, gamer_id)
     except gamers.GamerNotFoundError as exc:

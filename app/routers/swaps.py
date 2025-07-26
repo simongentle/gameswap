@@ -57,7 +57,7 @@ def delete_swap(swap_id: int, session: Session = Depends(get_session)):
     
 
 @router.get("/swaps/{swap_id}/gamers", response_model=list[Gamer]) 
-def get_gamers_for_given_swap(
+def get_gamers_in_swap(
     swap_id: int, 
     session: Session = Depends(get_session),
     notification_service: NotificationService = Depends(get_notification_service),
@@ -70,7 +70,7 @@ def get_gamers_for_given_swap(
 
 
 @router.get("/swaps/{swap_id}/games", response_model=list[Game]) 
-def get_games_for_given_swap(
+def get_games_in_swap(
     swap_id: int, 
     session: Session = Depends(get_session),
     notification_service: NotificationService = Depends(get_notification_service),
