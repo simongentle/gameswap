@@ -41,6 +41,22 @@ def get_swap(
         raise HTTPException(status_code=404) from exc
     
 
+@router.patch("/swaps/{swap_id}", response_model=Swap)
+def update_swap(swap_id: int, params: SwapUpdate, session: Session = Depends(get_session)):
+    try:
+        return swaps.update_swap(session, swap_id, params)
+    except swaps.SwapNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    
+
+@router.delete("/swaps/{swap_id}", response_model=Swap) 
+def delete_swap(swap_id: int, session: Session = Depends(get_session)):
+    try:
+        return swaps.delete_swap(session, swap_id)
+    except swaps.SwapNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    
+
 @router.get("/swaps/{swap_id}/gamers", response_model=list[Gamer]) 
 def get_gamers_for_given_swap(
     swap_id: int, 
@@ -65,14 +81,6 @@ def get_games_for_given_swap(
     except swaps.SwapNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
     return swap.games
-
-
-@router.patch("/swaps/{swap_id}", response_model=Swap)
-def update_swap(swap_id: int, params: SwapUpdate, session: Session = Depends(get_session)):
-    try:
-        return swaps.update_swap(session, swap_id, params)
-    except swaps.SwapNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
     
 
 @router.put("/swaps/{swap_id}/gamers/{gamer_id}", response_model=Swap)
@@ -84,14 +92,6 @@ def assign_gamer_to_swap(swap_id: int, gamer_id: int, session: Session = Depends
     except swaps.MaxGamersInSwapError as exc:
         raise HTTPException(status_code=422) from exc
     except gamers.GamerNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-
-
-@router.delete("/swaps/{swap_id}", response_model=Swap) 
-def delete_swap(swap_id: int, session: Session = Depends(get_session)):
-    try:
-        return swaps.delete_swap(session, swap_id)
-    except swaps.SwapNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
 
 

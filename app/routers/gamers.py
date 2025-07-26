@@ -33,15 +33,6 @@ def get_gamer(gamer_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404) from exc
     
 
-@router.get("/gamers/{gamer_id}/games", response_model=list[Game]) 
-def get_games_for_given_gamer(gamer_id: int, session: Session = Depends(get_session)):
-    try:
-        gamer = gamers.get_gamer(session, gamer_id)
-    except gamers.GamerNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    return gamer.games
-
-
 @router.patch("/gamers/{gamer_id}", response_model=Gamer)
 def update_gamer(gamer_id: int, params: GamerUpdate, session: Session = Depends(get_session)):
     try:
@@ -50,6 +41,23 @@ def update_gamer(gamer_id: int, params: GamerUpdate, session: Session = Depends(
         raise HTTPException(status_code=404) from exc
     except gamers.DuplicateGamerError as exc:
         raise HTTPException(status_code=422) from exc
+    
+
+@router.delete("/gamers/{gamer_id}", response_model=Gamer) 
+def delete_gamer(gamer_id: int, session: Session = Depends(get_session)):
+    try:
+        return gamers.delete_gamer(session, gamer_id)
+    except gamers.GamerNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    
+
+@router.get("/gamers/{gamer_id}/games", response_model=list[Game]) 
+def get_games_for_given_gamer(gamer_id: int, session: Session = Depends(get_session)):
+    try:
+        gamer = gamers.get_gamer(session, gamer_id)
+    except gamers.GamerNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    return gamer.games
     
 
 @router.put("/gamers/{gamer_id}/games/{game_id}", response_model=Gamer)
@@ -62,14 +70,7 @@ def assign_game_to_gamer(gamer_id: int, game_id: int, session: Session = Depends
         raise HTTPException(status_code=404) from exc
     except gamegamerlink.DuplicateAssignmentError as exc:
         raise HTTPException(status_code=422) from exc
-
-
-@router.delete("/gamers/{gamer_id}", response_model=Gamer) 
-def delete_gamer(gamer_id: int, session: Session = Depends(get_session)):
-    try:
-        return gamers.delete_gamer(session, gamer_id)
-    except gamers.GamerNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
+    
 
 @router.delete("/gamers/{gamer_id}/games/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_game_from_gamer(gamer_id: int, game_id: int, session: Session = Depends(get_session)):
