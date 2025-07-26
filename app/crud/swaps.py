@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import Protocol
 
-from app.crud.gamegamerlink import GameNotLinkedToGamerError
-from app.crud.gamers import get_gamer
+from app.crud.gamers import GameNotLinkedToGamerError, get_gamer
 from app.crud.games import get_game
 from app.dependencies.notifications import Event, Notification
 from app.models import Game, Gamer, Swap

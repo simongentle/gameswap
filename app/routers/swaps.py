@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 
 import app.crud.gamers as gamers
 import app.crud.games as games
-import app.crud.gamegamerlink as gamegamerlink
 import app.crud.swaps as swaps
 from app.dependencies.database import get_session
 from app.dependencies.notifications import NotificationService, get_notification_service
@@ -124,7 +123,7 @@ def assign_game_of_gamer_to_swap(
         raise HTTPException(status_code=422) from exc
     except games.GameNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
-    except gamegamerlink.GameNotLinkedToGamerError as exc:
+    except gamers.GameNotLinkedToGamerError as exc:
         raise HTTPException(status_code=422) from exc
     
 
@@ -145,7 +144,7 @@ def remove_game_of_gamer_from_swap(
         raise HTTPException(status_code=422) from exc
     except games.GameNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
-    except gamegamerlink.GameNotLinkedToGamerError as exc:
+    except gamers.GameNotLinkedToGamerError as exc:
         raise HTTPException(status_code=422) from exc
     except swaps.GameNotLinkedToSwapError as exc:
         raise HTTPException(status_code=422) from exc
