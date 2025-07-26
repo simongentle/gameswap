@@ -65,24 +65,6 @@ def test_gamer_email_not_unique(session: Session, client: TestClient) -> None:
     assert response.status_code == 422, response.text
 
 
-def test_get_games_for_given_gamer(session: Session, client: TestClient) -> None:
-    gamer = Gamer(name="Player One", email="press@start.com")
-    game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
-    game2 = Game(title="Super Mario Land", platform="GAME BOY")
-    session.add_all([gamer, game1, game2])
-    session.commit()
-
-    gamer.games.append(game1)
-    gamer.games.append(game2)
-    session.commit()
-
-    response = client.get(f"/gamers/{gamer.id}/games")
-    data = response.json()
-
-    assert response.status_code == 200, response.text
-    assert len(data) == 2
-
-
 def test_update_gamer(session: Session, client: TestClient) -> None:
     gamer = Gamer(name="Player One", email="press@start.com")
     session.add(gamer)
@@ -98,23 +80,6 @@ def test_update_gamer(session: Session, client: TestClient) -> None:
         and data["name"] == gamer.name == updated_name
         and data["email"] == gamer.email
     )
-
-def test_assign_game_to_gamer(session: Session, client: TestClient) -> None:
-    gamer = Gamer(name="Player One", email="press@start.com")
-    session.add(gamer)
-    session.commit()
-
-    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
-    session.add(game)
-    session.commit()
-
-    # Initial assignment should pass:
-    response = client.put(f"/gamers/{gamer.id}/games/{game.id}")
-    assert response.status_code == 200, response.text
-
-    # Repeated assignment should fail:
-    response = client.put(f"/gamers/{gamer.id}/games/{game.id}")
-    assert response.status_code == 422, response.text
 
 
 def test_delete_gamer(session: Session, client: TestClient) -> None:
@@ -134,19 +99,49 @@ def test_delete_gamer_not_exists(client: TestClient) -> None:
     assert response.status_code == 404, response.text
 
 
+def test_get_games_for_given_gamer(session: Session, client: TestClient) -> None:
+    gamer = Gamer(name="Player One", email="press@start.com")
+    game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
+    game2 = Game(title="Super Mario Land", platform="GAME BOY")
+    session.add_all([gamer, game1, game2])
+    session.commit()
+
+    gamer.games.append(game1)
+    gamer.games.append(game2)
+
+    response = client.get(f"/gamers/{gamer.id}/games")
+    data = response.json()
+
+    assert response.status_code == 200, response.text
+    assert len(data) == 2
+
+
+def test_assign_game_to_gamer(session: Session, client: TestClient) -> None:
+    gamer = Gamer(name="Player One", email="press@start.com")
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
+    session.add_all([gamer, game])
+    session.commit()
+
+    # Initial assignment should pass:
+    response = client.put(f"/gamers/{gamer.id}/games/{game.id}")
+    assert response.status_code == 200, response.text
+
+    # Repeated assignment should fail:
+    response = client.put(f"/gamers/{gamer.id}/games/{game.id}")
+    assert response.status_code == 422, response.text
+
+
 def test_remove_game_from_gamer(session: Session, client: TestClient) -> None:
     gamer = Gamer(name="Player One", email="press@start.com")
     game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
     session.add_all([gamer, game])
     session.commit()
+
     gamer.games.append(game)
-    session.commit()
 
     response = client.delete(f"/gamers/{gamer.id}/games/{game.id}")
     assert response.status_code == 204, response.text
-
-    game_in_gamers = game in gamer.games
-    assert game_in_gamers is False
+    assert game not in gamer.games
 
     response = client.delete(f"/gamers/{gamer.id}/games/{game.id}")
     assert response.status_code == 422, response.text

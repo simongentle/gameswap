@@ -129,7 +129,7 @@ def assign_game_of_gamer_to_swap(
     
 
 @router.delete("/swaps/{swap_id}/gamers/{gamer_id}/games/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_gamer_from_swap(
+def remove_game_of_gamer_from_swap(
     swap_id: int, 
     gamer_id: int, 
     game_id: int, 
