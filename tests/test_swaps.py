@@ -3,7 +3,7 @@ import datetime as dt
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Game, Gamer, Swap, MAX_GAMERS_IN_SWAP
+from app.models import Game, Gamer, Swap
 
 
 def test_create_swap(client: TestClient) -> None:
@@ -153,7 +153,7 @@ def test_assign_gamer_to_swap(session: Session, client: TestClient) -> None:
     assert len(swap.gamers) == 1
 
 
-def test_cannot_exceed_max_gamers_in_swap(session: Session, client: TestClient) -> None:
+def test_cannot_exceed_two_gamers_in_swap(session: Session, client: TestClient) -> None:
     swap = Swap(
         friend="Jeroen", 
         return_date=dt.date.today() + dt.timedelta(weeks=2),
@@ -161,17 +161,21 @@ def test_cannot_exceed_max_gamers_in_swap(session: Session, client: TestClient) 
     session.add(swap)
     session.commit()
 
-    gamers = [Gamer(name=f"Player {n}", email=f"gamer{n}@email.com") 
-              for n in range(MAX_GAMERS_IN_SWAP)]
-    session.add_all(gamers)
+    gamer1 = Gamer(name="Player One", email="gamer1@email.com")
+    gamer2 = Gamer(name="Player Two", email="gamer2@email.com")
+    gamer3 = Gamer(name="Player Three", email="gamer3@email.com")
+    session.add_all([gamer1, gamer2, gamer3])
     session.commit()
 
-    for n in range(MAX_GAMERS_IN_SWAP):
-        response = client.put(f"/swaps/{swap.id}/gamers/{gamers[n].id}")
-        assert response.status_code == 200, response.text
-        assert len(swap.gamers) == n + 1
+    response = client.put(f"/swaps/{swap.id}/gamers/{gamer1.id}")
+    assert response.status_code == 200, response.text
+    assert len(swap.gamers) == 1
 
-    response = client.put(f"/swaps/{swap.id}/gamers/{gamers[MAX_GAMERS_IN_SWAP - 1].id}")
+    response = client.put(f"/swaps/{swap.id}/gamers/{gamer2.id}")
+    assert response.status_code == 200, response.text
+    assert len(swap.gamers) == 2
+
+    response = client.put(f"/swaps/{swap.id}/gamers/{gamer3.id}")
     assert response.status_code == 422, response.text
 
 

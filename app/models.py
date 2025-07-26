@@ -4,7 +4,6 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 SWAP_DUE_THRESHOLD_IN_DAYS = 7
-MAX_GAMERS_IN_SWAP = 2
 
 
 class Base(DeclarativeBase):
@@ -55,7 +54,7 @@ class Swap(Base):
         return days_remaining <= SWAP_DUE_THRESHOLD_IN_DAYS
     
     def has_max_gamers(self) -> bool:
-        if len(self.gamers) >= MAX_GAMERS_IN_SWAP:
+        if len(self.gamers) >= 2:
             return True
         return False
     
