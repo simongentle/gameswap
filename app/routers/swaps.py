@@ -127,3 +127,26 @@ def assign_game_of_gamer_to_swap(
     except gamegamerlink.GameNotLinkedToGamerError as exc:
         raise HTTPException(status_code=422) from exc
     
+
+@router.delete("/swaps/{swap_id}/gamers/{gamer_id}/games/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_gamer_from_swap(
+    swap_id: int, 
+    gamer_id: int, 
+    game_id: int, 
+    session: Session = Depends(get_session),
+):
+    try:
+        swaps.remove_game_of_gamer_from_swap(session, swap_id, gamer_id, game_id)
+    except swaps.SwapNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    except gamers.GamerNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    except swaps.GamerNotLinkedToSwapError as exc:
+        raise HTTPException(status_code=422) from exc
+    except games.GameNotFoundError as exc:
+        raise HTTPException(status_code=404) from exc
+    except gamegamerlink.GameNotLinkedToGamerError as exc:
+        raise HTTPException(status_code=422) from exc
+    except swaps.GameNotLinkedToSwapError as exc:
+        raise HTTPException(status_code=422) from exc
+    

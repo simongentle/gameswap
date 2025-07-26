@@ -21,6 +21,10 @@ class GamerNotLinkedToSwapError(Exception):
     pass
 
 
+class GameNotLinkedToSwapError(Exception):
+    pass
+
+
 class NotificationService(Protocol):
     def post(self, notification: Notification) -> None: 
         ...
@@ -132,3 +136,17 @@ def assign_game_of_gamer_to_swap(session: Session, swap_id: int, gamer_id: int, 
     session.commit()
     session.refresh(swap)
     return swap
+
+
+def remove_game_of_gamer_from_swap(session: Session, swap_id: int, gamer_id: int, game_id: int) -> None:    
+    swap = find_swap(session, swap_id)
+    gamer = get_gamer(session, gamer_id)
+    if gamer not in swap.gamers:
+        raise GamerNotLinkedToSwapError
+    game = get_game(session, game_id)
+    if game not in gamer.games:
+        raise GameNotLinkedToGamerError
+    if game not in swap.games:
+        raise GameNotLinkedToSwapError
+    swap.games.remove(game)
+    session.commit()

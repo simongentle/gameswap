@@ -277,3 +277,30 @@ def test_remove_gamer_from_swap(session: Session, client: TestClient) -> None:
 
     response = client.delete(f"/swaps/{swap.id}/gamers/{gamer.id}")
     assert response.status_code == 422, response.text
+
+
+def test_remove_game_of_gamer_from_swap(session: Session, client: TestClient) -> None:
+    swap = Swap(
+        friend="Jeroen", 
+        return_date=dt.date.today() + dt.timedelta(weeks=2),
+    )
+    session.add(swap)
+    session.commit()
+
+    gamer = Gamer(name="Player One", email="press@start.com")
+    session.add(gamer)
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
+    session.add(game)
+    gamer.games.append(game)
+    session.commit()
+
+    swap.gamers.append(gamer)
+    swap.games.append(game)
+    session.commit()
+
+    response = client.delete(f"/swaps/{swap.id}/gamers/{gamer.id}/games/{game.id}")
+    assert response.status_code == 204, response.text
+    assert game not in swap.games
+
+    response = client.delete(f"/swaps/{swap.id}/gamers/{gamer.id}/games/{game.id}")
+    assert response.status_code == 422, response.text
