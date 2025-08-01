@@ -85,11 +85,13 @@ def test_delete_swap(session: Session, client: TestClient) -> None:
     lent_game = Game(
         title="Sonic The Hedgehog", 
         platform="SEGA Mega Drive", 
+        gamer_id=1,
         swap_id=swap.id,
     )
     borrowed_game = Game(
         title="Super Mario Land", 
         platform="GAME BOY", 
+        gamer_id=2,
         swap_id=swap.id,
     )
     session.add_all([lent_game, borrowed_game])
@@ -137,11 +139,13 @@ def test_get_games_for_given_swap(session: Session, client: TestClient) -> None:
     lent_game = Game(
         title="Sonic The Hedgehog", 
         platform="SEGA Mega Drive", 
+        gamer_id=1,
         swap_id=swap.id,
     )
     borrowed_game = Game(
         title="Super Mario Land", 
         platform="GAME BOY", 
+        gamer_id=2,
         swap_id=swap.id,
     )
     session.add_all([swap, lent_game, borrowed_game])
@@ -188,11 +192,13 @@ def test_cannot_exceed_two_gamers_in_swap(session: Session, client: TestClient) 
 def test_assign_game_of_gamer_to_swap(session: Session, client: TestClient) -> None:
     swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     gamer = Gamer(name="Player One", email="press@start.com")
-    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
-    session.add_all([swap, gamer, game])
+    session.add_all([swap, gamer])
     session.commit()
 
-    gamer.games.append(game)
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=gamer.id)
+    session.add(game)
+    session.commit()
+
     swap.gamers.append(gamer)
 
     response = client.put(f"/swaps/{swap.id}/gamers/{gamer.id}/games/{game.id}")
@@ -203,13 +209,14 @@ def test_assign_game_of_gamer_to_swap(session: Session, client: TestClient) -> N
 def test_remove_gamer_from_swap(session: Session, client: TestClient) -> None:
     swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     gamer = Gamer(name="Player One", email="press@start.com")
-    game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
-    game2 = Game(title="Super Mario Land", platform="GAME BOY")
-    session.add_all([swap, gamer, game1, game2])
+    session.add_all([swap, gamer])
     session.commit()
 
-    for game in [game1, game2]:
-        gamer.games.append(game)
+    game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=gamer.id)
+    game2 = Game(title="Super Mario Land", platform="GAME BOY", gamer_id=gamer.id)
+    session.add_all([game1, game2])
+    session.commit()
+
     swap.gamers.append(gamer)
     for game in [game1, game2]:
         swap.games.append(game)
@@ -227,11 +234,13 @@ def test_remove_gamer_from_swap(session: Session, client: TestClient) -> None:
 def test_remove_game_of_gamer_from_swap(session: Session, client: TestClient) -> None:
     swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
     gamer = Gamer(name="Player One", email="press@start.com")
-    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive")
-    session.add_all([swap, gamer, game])
+    session.add_all([swap, gamer])
+    session.commit()
+
+    game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=gamer.id)
+    session.add(game)
     session.commit()
     
-    gamer.games.append(game)
     swap.gamers.append(gamer)
     swap.games.append(game)
 

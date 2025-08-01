@@ -4,6 +4,7 @@ from pydantic import BaseModel
 class GameBase(BaseModel):
     title: str
     platform: str
+    gamer_id: int
 
 
 class GameCreate(GameBase):
@@ -17,3 +18,9 @@ class GameUpdate(BaseModel):
 
 class Game(GameBase):
     id: int
+
+
+class GameQuery(BaseModel):
+    title: str
+    platform: str
+    

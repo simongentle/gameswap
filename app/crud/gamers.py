@@ -1,8 +1,8 @@
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.crud.games import get_game
-from app.models import Gamer
+from app.models import Game, Gamer
 from app.schemas.gamer import GamerCreate, GamerUpdate
 
 
@@ -11,10 +11,6 @@ class GamerNotFoundError(Exception):
 
 
 class DuplicateGamerError(Exception):
-    pass
-
-
-class DuplicateAssignmentError(Exception):
     pass
 
 
@@ -65,22 +61,14 @@ def delete_gamer(session: Session, gamer_id: int) -> Gamer:
     return gamer
 
 
-def assign_game_to_gamer(session: Session, gamer_id: int, game_id: int) -> Gamer:    
-    gamer = get_gamer(session, gamer_id)
-    game = get_game(session, game_id)
-    gamer.games.append(game)
-    try:
-        session.commit()
-    except IntegrityError as exc:
-        raise DuplicateAssignmentError from exc
-    session.refresh(gamer)
-    return gamer
+def get_games_owned_by_gamer(session: Session, gamer_id: int) -> list[Game]:
+    result = session.execute(select(Game).where(Game.gamer_id == gamer_id))
+    games = result.scalars().all()
+    return games
 
 
-def remove_game_from_gamer(session: Session, gamer_id: int, game_id: int) -> None:    
-    gamer = get_gamer(session, gamer_id)
-    game = get_game(session, game_id)
-    if game not in gamer.games:
-        raise GameNotLinkedToGamerError
-    gamer.games.remove(game)
-    session.commit()
+def get_gamers_who_own_game(session: Session, title: str, platform: str) -> list[Gamer]:
+    query = session.query(Gamer) \
+        .filter(Gamer.games.any((Game.title == title) & (Game.platform == platform)))
+    gamers = query.all()
+    return gamers
