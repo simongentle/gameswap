@@ -15,10 +15,8 @@ def create_game(game: GameCreate, session: Session = Depends(get_session)):
 
 
 @router.get("/games", response_model=list[Game]) 
-def get_games(title: str | None = None, session: Session = Depends(get_session)):
-    if title is None:
-        return games.get_games(session)
-    return games.get_games_by_title(session, title)
+def get_games(session: Session = Depends(get_session)):
+    return games.get_games(session)
 
 
 @router.get("/games/{game_id}", response_model=Game) 

@@ -1,4 +1,3 @@
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import Game 
@@ -18,12 +17,6 @@ def get_game(session: Session, game_id: int) -> Game:
 
 def get_games(session: Session) -> list[Game]:
     games = session.query(Game).all()
-    return games
-
-
-def get_games_by_title(session: Session, title: str) -> list[Game]:
-    result = session.execute(select(Game).where(Game.title == title))
-    games = result.scalars().all()
     return games
 
 

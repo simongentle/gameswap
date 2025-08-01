@@ -18,9 +18,3 @@ class GameUpdate(BaseModel):
 
 class Game(GameBase):
     id: int
-
-
-class GameQuery(BaseModel):
-    title: str
-    platform: str
-    

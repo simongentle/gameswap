@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 import app.crud.gamers as gamers
 from app.dependencies.database import get_session
-from app.schemas.game import Game, GameQuery
+from app.schemas.game import Game
 from app.schemas.gamer import Gamer, GamerCreate, GamerUpdate
 
 
@@ -19,10 +19,10 @@ def create_gamer(gamer: GamerCreate, session: Session = Depends(get_session)):
 
 
 @router.get("/gamers", response_model=list[Gamer]) 
-def get_gamers(game: GameQuery | None = None, session: Session = Depends(get_session)):
-    if game is None:
+def get_gamers(title: str | None = None, session: Session = Depends(get_session)):
+    if title is None:
         return gamers.get_gamers(session)
-    return gamers.get_gamers_who_own_game(session, game.title, game.platform)
+    return gamers.get_gamers_who_own_game(session, title)
 
 
 @router.get("/gamers/{gamer_id}", response_model=Gamer) 

@@ -67,8 +67,7 @@ def get_games_owned_by_gamer(session: Session, gamer_id: int) -> list[Game]:
     return games
 
 
-def get_gamers_who_own_game(session: Session, title: str, platform: str) -> list[Gamer]:
-    query = session.query(Gamer) \
-        .filter(Gamer.games.any((Game.title == title) & (Game.platform == platform)))
+def get_gamers_who_own_game(session: Session, title: str) -> list[Gamer]:
+    query = session.query(Gamer).filter(Gamer.games.any(Game.title == title))
     gamers = query.all()
     return gamers

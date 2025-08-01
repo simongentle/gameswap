@@ -116,22 +116,28 @@ def test_get_games_for_given_gamer(session: Session, client: TestClient) -> None
     assert len(data) == 2
 
 
-def test_get_gamers_who_own_game(session: Session, client: TestClient) -> None:
+def test_get_gamers(session: Session, client: TestClient) -> None:
     gamer1 = Gamer(name="Player One", email="press@start.com")
     gamer2 = Gamer(name="Player Two", email="insert@coin.com")
-    session.add_all([gamer1, gamer2])
+    gamer3 = Gamer(name="Player Three", email="select@player.com")
+    session.add_all([gamer1, gamer2, gamer3])
     session.commit()
     
     title = "Sonic The Hedgehog"
     platform = "SEGA Mega Drive"
     game1 = Game(title=title, platform=platform, gamer_id=1)
     game2 = Game(title=title, platform=platform, gamer_id=2)
-    session.add_all([game1, game2])
+    game3 = Game(title="Ristar", platform=platform, gamer_id=3)
+    session.add_all([game1, game2, game3])
     session.commit()
 
-    game_query = {"title": title, "platform": platform}
+    response = client.get(f"/gamers")
+    data = response.json()
 
-    response = client.get(f"/gamers?game={game_query}")
+    assert response.status_code == 200, response.text
+    assert len(data) == 3
+
+    response = client.get(f"/gamers?title={title}")
     data = response.json()
 
     assert response.status_code == 200, response.text
