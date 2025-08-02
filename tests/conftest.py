@@ -1,7 +1,7 @@
 import pytest
 
 from fastapi.testclient import TestClient
-from sqlalchemy import StaticPool, create_engine
+from sqlalchemy import StaticPool, create_engine, event
 from sqlalchemy.orm import Session
 
 from app.dependencies.database import get_session
@@ -20,6 +20,7 @@ def session_fixture():
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
+    event.listen(engine, 'connect', lambda c, _: c.execute('pragma foreign_keys=on'))
     Base.metadata.create_all(engine)
 
     with Session(engine, autocommit=False, autoflush=False) as session:
