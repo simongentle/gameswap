@@ -82,6 +82,11 @@ def test_delete_swap(session: Session, client: TestClient) -> None:
     session.add(swap)
     session.commit()
 
+    gamer1 = Gamer(name="Player One", email="press@start.com")
+    gamer2 = Gamer(name="Player Two", email="insert@coin.com")
+    session.add_all([gamer1, gamer2])
+    session.commit()
+
     lent_game = Game(
         title="Sonic The Hedgehog", 
         platform="SEGA Mega Drive", 
@@ -136,6 +141,11 @@ def test_get_games_for_given_swap(session: Session, client: TestClient) -> None:
     session.add(swap)
     session.commit()
 
+    gamer1 = Gamer(name="Player One", email="press@start.com")
+    gamer2 = Gamer(name="Player Two", email="insert@coin.com")
+    session.add_all([gamer1, gamer2])
+    session.commit()
+
     lent_game = Game(
         title="Sonic The Hedgehog", 
         platform="SEGA Mega Drive", 
@@ -148,7 +158,7 @@ def test_get_games_for_given_swap(session: Session, client: TestClient) -> None:
         gamer_id=2,
         swap_id=swap.id,
     )
-    session.add_all([swap, lent_game, borrowed_game])
+    session.add_all([lent_game, borrowed_game])
     session.commit()
 
     response = client.get(f"/swaps/{swap.id}/games")
