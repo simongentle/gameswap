@@ -19,10 +19,14 @@ def create_gamer(gamer: GamerCreate, session: Session = Depends(get_session)):
 
 
 @router.get("/gamers", response_model=list[Gamer]) 
-def get_gamers(title: str | None = None, session: Session = Depends(get_session)):
-    if title is None:
-        return gamers.get_gamers(session)
-    return gamers.get_gamers_who_own_game(session, title)
+def get_gamers(
+    title: str | None = None, 
+    platform: str | None = None,
+    session: Session = Depends(get_session),
+):
+    if title or platform:
+        return gamers.get_gamers_who_own_game(session, title, platform)
+    return gamers.get_gamers(session)
 
 
 @router.get("/gamers/{gamer_id}", response_model=Gamer) 

@@ -29,6 +29,38 @@ def test_create_gamer_invalid_email(client: TestClient) -> None:
     assert response.status_code == 422, response.text
 
 
+def test_get_gamers(session: Session, client: TestClient) -> None:
+    gamer1 = Gamer(name="Player One", email="press@start.com")
+    gamer2 = Gamer(name="Player Two", email="insert@coin.com")
+    gamer3 = Gamer(name="Player Three", email="select@player.com")
+    session.add_all([gamer1, gamer2, gamer3])
+    session.commit()
+    
+    title1, title2 = "Sonic The Hedgehog", "Ristar"
+    platform1, platform2 = "SEGA Mega Drive", "SEGA Master System"
+    game1 = Game(title=title1, platform=platform1, gamer_id=1)
+    game2 = Game(title=title1, platform=platform2, gamer_id=2)
+    game3 = Game(title=title2, platform=platform1, gamer_id=3)
+    session.add_all([game1, game2, game3])
+    session.commit()
+
+    response = client.get(f"/gamers")
+    assert response.status_code == 200, response.text
+    assert len(response.json()) == 3
+
+    response = client.get(f"/gamers?title={title1}")
+    assert response.status_code == 200, response.text
+    assert len(response.json()) == 2
+
+    response = client.get(f"/gamers?platform={platform2}")
+    assert response.status_code == 200, response.text
+    assert len(response.json()) == 1
+
+    response = client.get(f"/gamers?title={title2}&platform={platform2}")
+    assert response.status_code == 200, response.text
+    assert len(response.json()) == 0
+
+
 def test_get_gamer(session: Session, client: TestClient) -> None:
     gamer = Gamer(name="Player One", email="press@start.com")
     session.add(gamer)
@@ -110,34 +142,6 @@ def test_get_games_for_given_gamer(session: Session, client: TestClient) -> None
     session.commit()
 
     response = client.get(f"/gamers/{gamer.id}/games")
-    data = response.json()
-
-    assert response.status_code == 200, response.text
-    assert len(data) == 2
-
-
-def test_get_gamers(session: Session, client: TestClient) -> None:
-    gamer1 = Gamer(name="Player One", email="press@start.com")
-    gamer2 = Gamer(name="Player Two", email="insert@coin.com")
-    gamer3 = Gamer(name="Player Three", email="select@player.com")
-    session.add_all([gamer1, gamer2, gamer3])
-    session.commit()
-    
-    title = "Sonic The Hedgehog"
-    platform = "SEGA Mega Drive"
-    game1 = Game(title=title, platform=platform, gamer_id=1)
-    game2 = Game(title=title, platform=platform, gamer_id=2)
-    game3 = Game(title="Ristar", platform=platform, gamer_id=3)
-    session.add_all([game1, game2, game3])
-    session.commit()
-
-    response = client.get(f"/gamers")
-    data = response.json()
-
-    assert response.status_code == 200, response.text
-    assert len(data) == 3
-
-    response = client.get(f"/gamers?title={title}")
     data = response.json()
 
     assert response.status_code == 200, response.text

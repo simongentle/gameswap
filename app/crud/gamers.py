@@ -67,7 +67,15 @@ def get_games_owned_by_gamer(session: Session, gamer_id: int) -> list[Game]:
     return games
 
 
-def get_gamers_who_own_game(session: Session, title: str) -> list[Gamer]:
-    query = session.query(Gamer).filter(Gamer.games.any(Game.title == title))
+def get_gamers_who_own_game(session: Session, title: str | None, platform: str | None) -> list[Gamer]:
+    if title is None and platform is None:
+        raise ValueError("At least one filter parameter should be provided.")
+    
+    query = session.query(Gamer)
+    if title:
+        query = query.filter(Gamer.games.any(Game.title == title))
+    if platform:
+        query = query.filter(Gamer.games.any(Game.platform == platform))
+
     gamers = query.all()
     return gamers
