@@ -44,7 +44,7 @@ def test_get_gamers(session: Session, client: TestClient) -> None:
     session.add_all([game1, game2, game3])
     session.commit()
 
-    response = client.get(f"/gamers")
+    response = client.get("/gamers")
     assert response.status_code == 200, response.text
     assert len(response.json()) == 3
 
@@ -119,11 +119,20 @@ def test_delete_gamer(session: Session, client: TestClient) -> None:
     session.add(gamer)
     session.commit()
 
+    game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=gamer.id)
+    game2 = Game(title="Super Mario Land", platform="GAME BOY", gamer_id=gamer.id)
+    session.add_all([game1, game2])
+    session.commit()
+
     response = client.delete(f"/gamers/{gamer.id}")
     assert response.status_code == 200, response.text
 
     gamer_in_db = session.get(Gamer, gamer.id)
     assert gamer_in_db is None
+
+    response = client.get("/games")
+    assert response.status_code == 200, response.text
+    assert len(response.json()) == 0
     
 
 def test_delete_gamer_not_exists(client: TestClient) -> None:

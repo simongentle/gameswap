@@ -16,7 +16,7 @@ class Game(Base):
     title: Mapped[str] = mapped_column(index=True)
     platform: Mapped[str]
 
-    gamer_id: Mapped[int] = mapped_column(ForeignKey("gamer.id"))
+    gamer_id: Mapped[int] = mapped_column(ForeignKey("gamer.id", ondelete="CASCADE"))
     gamer: Mapped["Gamer"] = relationship(back_populates="games")
 
     swap_id: Mapped[int | None] = mapped_column(ForeignKey("swap.id"))
@@ -29,7 +29,7 @@ class Gamer(Base):
     name: Mapped[str] 
     email: Mapped[str] = mapped_column(unique=True)
 
-    games: Mapped[list[Game]] = relationship(back_populates="gamer")
+    games: Mapped[list[Game]] = relationship(back_populates="gamer", cascade="all, delete-orphan")
 
     swap_id: Mapped[int | None] = mapped_column(ForeignKey("swap.id"))
     swap: Mapped["Swap | None"] = relationship(back_populates="gamers")
