@@ -3,13 +3,27 @@ import datetime as dt
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Game, Gamer, Swap
+from app.models import Game, Gamer, Swap, to_dict
 
 
-def test_create_swap(client: TestClient) -> None:
+def test_create_swap(session: Session, client: TestClient) -> None:
     return_date = dt.date.today() + dt.timedelta(weeks=2)
+
+    proposer = Gamer(name="Player One", email="press@start.com")
+    acceptor = Gamer(name="Player Two", email="insert@coin.com")
+    session.add_all([proposer, acceptor])
+    session.commit()
+
+    proposer_game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=proposer.id)
+    acceptor_game = Game(title="Super Mario Land", platform="GAME BOY", gamer_id=acceptor.id)
+    session.add_all([proposer_game, acceptor_game])
+    session.commit()
+
     swap_data = {
         "return_date": return_date.strftime("%Y-%m-%d"),
+        "proposer_id": proposer.id,
+        "acceptor_id": acceptor.id,
+        "games": [to_dict(game) for game in (proposer_game, acceptor_game)]
     }
     response = client.post("/swaps", json=swap_data)
     data = response.json()
@@ -18,6 +32,8 @@ def test_create_swap(client: TestClient) -> None:
     assert (
         "id" in data
         and data["return_date"] == swap_data["return_date"]
+        and len(data["games"]) == 2
+        and [game["id"] == data["id"] for game in data["games"]]
     )
 
 
@@ -166,37 +182,6 @@ def test_get_games_for_given_swap(session: Session, client: TestClient) -> None:
 
     assert response.status_code == 200, response.text
     assert len(data) == 2
-    
-
-def test_assign_gamer_to_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
-    gamer = Gamer(name="Player One", email="press@start.com")
-    session.add_all([swap, gamer])
-    session.commit()
-
-    response = client.put(f"/swaps/{swap.id}/gamers/{gamer.id}")
-    assert response.status_code == 200, response.text
-    assert len(swap.gamers) == 1
-
-
-def test_cannot_exceed_two_gamers_in_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
-    gamer1 = Gamer(name="Player One", email="gamer1@email.com")
-    gamer2 = Gamer(name="Player Two", email="gamer2@email.com")
-    gamer3 = Gamer(name="Player Three", email="gamer3@email.com")
-    session.add_all([swap, gamer1, gamer2, gamer3])
-    session.commit()
-
-    response = client.put(f"/swaps/{swap.id}/gamers/{gamer1.id}")
-    assert response.status_code == 200, response.text
-    assert len(swap.gamers) == 1
-
-    response = client.put(f"/swaps/{swap.id}/gamers/{gamer2.id}")
-    assert response.status_code == 200, response.text
-    assert len(swap.gamers) == 2
-
-    response = client.put(f"/swaps/{swap.id}/gamers/{gamer3.id}")
-    assert response.status_code == 422, response.text
 
 
 def test_assign_game_of_gamer_to_swap(session: Session, client: TestClient) -> None:
@@ -214,31 +199,6 @@ def test_assign_game_of_gamer_to_swap(session: Session, client: TestClient) -> N
     response = client.put(f"/swaps/{swap.id}/gamers/{gamer.id}/games/{game.id}")
     assert response.status_code == 200, response.text
     assert len(swap.games) == 1
-
-
-def test_remove_gamer_from_swap(session: Session, client: TestClient) -> None:
-    swap = Swap(return_date=dt.date.today() + dt.timedelta(weeks=2))
-    gamer = Gamer(name="Player One", email="press@start.com")
-    session.add_all([swap, gamer])
-    session.commit()
-
-    game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=gamer.id)
-    game2 = Game(title="Super Mario Land", platform="GAME BOY", gamer_id=gamer.id)
-    session.add_all([game1, game2])
-    session.commit()
-
-    swap.gamers.append(gamer)
-    for game in [game1, game2]:
-        swap.games.append(game)
-
-    response = client.delete(f"/swaps/{swap.id}/gamers/{gamer.id}")
-    assert response.status_code == 204, response.text
-    
-    assert gamer not in swap.gamers
-    assert len(swap.games) == 0
-
-    response = client.delete(f"/swaps/{swap.id}/gamers/{gamer.id}")
-    assert response.status_code == 422, response.text
 
 
 def test_remove_game_of_gamer_from_swap(session: Session, client: TestClient) -> None:

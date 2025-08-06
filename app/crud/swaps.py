@@ -62,9 +62,15 @@ def create_swap(
         params: SwapCreate, 
         notification_service: NotificationService,
     ) -> Swap:
-    swap = Swap(**params.model_dump())
+    swap = Swap(**params.model_dump(exclude={"games"}))
     session.add(swap)
     session.commit()
+
+    for game_model in params.games:
+        game = get_game(session, game_model.id)
+        game.swap_id = swap.id
+    session.commit()
+
     session.refresh(swap)
 
     notification_service.post(
@@ -94,33 +100,11 @@ def delete_swap(session: Session, swap_id: int) -> Swap:
     return swap
 
 
-def assign_gamer_to_swap(session: Session, swap_id: int, gamer_id: int) -> Swap:    
-    swap = find_swap(session, swap_id)
-    if swap.has_max_gamers():
-        raise MaxGamersInSwapError
-    gamer = get_gamer(session, gamer_id)
-    swap.gamers.append(gamer)
-    session.commit()
-    session.refresh(swap)
-    return swap
-
-
 def remove_games_of_gamer_from_swap(session: Session, gamer: Gamer, swap: Swap) -> list[Game]:
     games_of_gamer_in_swap = [game for game in swap.games if game in gamer.games]
     for game in games_of_gamer_in_swap:
         swap.games.remove(game)
-    session.commit()
-
-
-def remove_gamer_from_swap(session: Session, swap_id: int, gamer_id: int) -> None:    
-    swap = find_swap(session, swap_id)
-    gamer = get_gamer(session, gamer_id)
-    if gamer not in swap.gamers:
-        raise GamerNotLinkedToSwapError
-    swap.gamers.remove(gamer)
-    session.commit()
-
-    remove_games_of_gamer_from_swap(session, gamer, swap)    
+    session.commit()  
 
 
 def assign_game_of_gamer_to_swap(session: Session, swap_id: int, gamer_id: int, game_id: int) -> Swap:    

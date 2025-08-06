@@ -23,6 +23,7 @@ def test_create_game(session: Session, client: TestClient) -> None:
         and data["title"] == game_data["title"]
         and data["platform"] == game_data["platform"]
         and data["gamer_id"] == game_data["gamer_id"]
+        and data["swap_id"] is None
     )
 
 
