@@ -28,6 +28,10 @@ class SwapCreate(SwapBase):
             raise ValueError(
                 "A swap must involve at least one of the proposer's games and at least one of the acceptor's gmaes."
             )
+        
+        game_info = [(game.title, game.platform) for game in self.games]
+        if len(game_info) != len(set(game_info)):
+            raise ValueError("A swap involves at most one game with a given (title, platform).")
 
         return self
 
