@@ -113,6 +113,42 @@ def test_create_swap_duplicate_game_info(session: Session, client: TestClient) -
     assert response.status_code == 422, response.text
 
 
+def test_create_swap_valid_request_empty_database(client: TestClient, session: Session) -> None:
+    # Valid request:
+    return_date = dt.date.today() + dt.timedelta(weeks=2)
+    proposer_game = {
+        "id": 1,
+        "title": "Sonic The Hedgehog",
+        "platform": "SEGA Mega Drive",
+        "gamer_id": 1,
+    }
+    acceptor_game = {
+        "id": 2,
+        "title": "Super Mario Land", 
+        "platform": "GAME BOY", 
+        "gamer_id": 2,
+    }
+    swap_data = {
+        "return_date": return_date.strftime("%Y-%m-%d"),
+        "proposer_id": 1,
+        "acceptor_id": 2,
+        "games": [proposer_game, acceptor_game]
+    }
+    
+    # Execute request on empty database:
+    response = client.post("/swaps", json=swap_data)
+    assert response.status_code == 422, response.text
+
+    # Add gamers only and then execute request:
+    proposer = Gamer(name="Player One", email="press@start.com")
+    acceptor = Gamer(name="Player Two", email="insert@coin.com")
+    session.add_all([proposer, acceptor])
+    session.commit()
+
+    response = client.post("/swaps", json=swap_data)
+    assert response.status_code == 422, response.text
+
+
 def test_get_swap(swap: Swap, client: TestClient) -> None:
     response = client.get(f"/swaps/{swap.id}")
     data = response.json()

@@ -32,6 +32,7 @@ def create_gamer(session: Session, params: GamerCreate) -> Gamer:
     try:
         session.commit()
     except IntegrityError as exc:
+        session.rollback()
         raise DuplicateGamerError from exc
     session.refresh(gamer)
     return gamer

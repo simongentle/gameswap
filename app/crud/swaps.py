@@ -1,6 +1,8 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from typing import Protocol
 
+from app.crud.gamers import GamerNotFoundError
 from app.crud.games import get_game
 from app.dependencies.notifications import Event, Notification
 from app.models import Swap
@@ -51,7 +53,11 @@ def create_swap(
     ) -> Swap:
     swap = Swap(**params.model_dump(exclude={"games"}))
     session.add(swap)
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError as exc:
+        session.rollback()
+        raise GamerNotFoundError from exc
 
     for game_model in params.games:
         game = get_game(session, game_model.id)
