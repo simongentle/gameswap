@@ -26,6 +26,8 @@ def create_swap(
         raise HTTPException(status_code=422) from exc
     except games.GameNotFoundError as exc:
         raise HTTPException(status_code=422) from exc
+    except swaps.GameLinkedToDifferentGamerError as exc:
+        raise HTTPException(status_code=422) from exc
 
 
 @router.get("/swaps", response_model=list[Swap]) 

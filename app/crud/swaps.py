@@ -13,6 +13,10 @@ class SwapNotFoundError(Exception):
     pass
 
 
+class GameLinkedToDifferentGamerError(Exception):
+    pass
+
+
 class NotificationService(Protocol):
     def post(self, notification: Notification) -> None: 
         ...
@@ -61,6 +65,8 @@ def create_swap(
 
     for game_model in params.games:
         game = get_game(session, game_model.id)
+        if game.gamer_id not in (params.proposer_id, params.acceptor_id):
+            raise GameLinkedToDifferentGamerError
         game.swap_id = swap.id
     session.commit()
 

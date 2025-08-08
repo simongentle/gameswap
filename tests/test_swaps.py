@@ -149,6 +149,45 @@ def test_create_swap_valid_request_empty_database(client: TestClient, session: S
     assert response.status_code == 422, response.text
 
 
+def test_create_swap_valid_request_inconsistent_with_database(
+        session: Session,
+        client: TestClient, 
+    ) -> None:
+    # Four gamers, each with a different game:
+    gamers = [Gamer(name=f"gamer{n}", email=f"gamer{n}@retro.com") for n in range(1, 5)]
+    session.add_all(gamers)
+    session.commit()
+
+    games = [Game(title=f"game{n}", platform="platform", gamer_id=n) for n in range(1, 5)]
+    session.add_all(games)
+    session.commit()
+
+    # Valid request, but wrong game assigned to each gamer:
+    return_date = dt.date.today() + dt.timedelta(weeks=2)
+    proposer_game = {
+        "id": 3,
+        "title": "game3",
+        "platform": "platform",
+        "gamer_id": 1,
+    }
+    acceptor_game = {
+        "id": 4,
+        "title": "game4", 
+        "platform": "platform", 
+        "gamer_id": 2,
+    }
+    swap_data = {
+        "return_date": return_date.strftime("%Y-%m-%d"),
+        "proposer_id": 1,
+        "acceptor_id": 2,
+        "games": [proposer_game, acceptor_game]
+    }
+    
+    # Execute request:
+    response = client.post("/swaps", json=swap_data)
+    assert response.status_code == 422, response.text
+
+
 def test_get_swap(swap: Swap, client: TestClient) -> None:
     response = client.get(f"/swaps/{swap.id}")
     data = response.json()
