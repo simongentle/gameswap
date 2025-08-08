@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException,  status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-import app.crud.gamers as gamers
-import app.crud.games as games
 import app.crud.swaps as swaps
 from app.dependencies.database import get_session
 from app.dependencies.notifications import NotificationService, get_notification_service
@@ -66,7 +64,7 @@ def get_gamers_in_swap(
         swap = swaps.get_swap(session, swap_id, notification_service)
     except swaps.SwapNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
-    return swap.gamers
+    return [swap.proposer, swap.acceptor]
 
 
 @router.get("/swaps/{swap_id}/games", response_model=list[Game]) 
@@ -80,48 +78,4 @@ def get_games_in_swap(
     except swaps.SwapNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
     return swap.games
-    
-
-@router.put("/swaps/{swap_id}/gamers/{gamer_id}/games/{game_id}", response_model=Swap)
-def assign_game_of_gamer_to_swap(
-    swap_id: int, 
-    gamer_id: int, 
-    game_id: int, 
-    session: Session = Depends(get_session),
-):
-    try:
-        return swaps.assign_game_of_gamer_to_swap(session, swap_id, gamer_id, game_id)
-    except swaps.SwapNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    except gamers.GamerNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    except swaps.GamerNotLinkedToSwapError as exc:
-        raise HTTPException(status_code=422) from exc
-    except games.GameNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    except gamers.GameNotLinkedToGamerError as exc:
-        raise HTTPException(status_code=422) from exc
-    
-
-@router.delete("/swaps/{swap_id}/gamers/{gamer_id}/games/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_game_of_gamer_from_swap(
-    swap_id: int, 
-    gamer_id: int, 
-    game_id: int, 
-    session: Session = Depends(get_session),
-):
-    try:
-        swaps.remove_game_of_gamer_from_swap(session, swap_id, gamer_id, game_id)
-    except swaps.SwapNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    except gamers.GamerNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    except swaps.GamerNotLinkedToSwapError as exc:
-        raise HTTPException(status_code=422) from exc
-    except games.GameNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    except gamers.GameNotLinkedToGamerError as exc:
-        raise HTTPException(status_code=422) from exc
-    except swaps.GameNotLinkedToSwapError as exc:
-        raise HTTPException(status_code=422) from exc
     

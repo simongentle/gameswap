@@ -14,10 +14,6 @@ class DuplicateGamerError(Exception):
     pass
 
 
-class GameNotLinkedToGamerError(Exception):
-    pass
-
-
 def get_gamer(session: Session, gamer_id: int) -> Gamer:
     gamer = session.get(Gamer, gamer_id)
     if gamer is None:

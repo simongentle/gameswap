@@ -1,26 +1,13 @@
 from sqlalchemy.orm import Session
 from typing import Protocol
 
-from app.crud.gamers import GameNotLinkedToGamerError, get_gamer
 from app.crud.games import get_game
 from app.dependencies.notifications import Event, Notification
-from app.models import Game, Gamer, Swap
+from app.models import Swap
 from app.schemas.swap import SwapCreate, SwapUpdate
 
 
 class SwapNotFoundError(Exception):
-    pass
-
-
-class MaxGamersInSwapError(Exception):
-    pass
-
-
-class GamerNotLinkedToSwapError(Exception):
-    pass
-
-
-class GameNotLinkedToSwapError(Exception):
     pass
 
 
@@ -98,38 +85,3 @@ def delete_swap(session: Session, swap_id: int) -> Swap:
     session.delete(swap)
     session.commit()
     return swap
-
-
-def remove_games_of_gamer_from_swap(session: Session, gamer: Gamer, swap: Swap) -> list[Game]:
-    games_of_gamer_in_swap = [game for game in swap.games if game in gamer.games]
-    for game in games_of_gamer_in_swap:
-        swap.games.remove(game)
-    session.commit()  
-
-
-def assign_game_of_gamer_to_swap(session: Session, swap_id: int, gamer_id: int, game_id: int) -> Swap:    
-    swap = find_swap(session, swap_id)
-    gamer = get_gamer(session, gamer_id)
-    if gamer not in swap.gamers:
-        raise GamerNotLinkedToSwapError
-    game = get_game(session, game_id)
-    if game not in gamer.games:
-        raise GameNotLinkedToGamerError
-    swap.games.append(game)
-    session.commit()
-    session.refresh(swap)
-    return swap
-
-
-def remove_game_of_gamer_from_swap(session: Session, swap_id: int, gamer_id: int, game_id: int) -> None:    
-    swap = find_swap(session, swap_id)
-    gamer = get_gamer(session, gamer_id)
-    if gamer not in swap.gamers:
-        raise GamerNotLinkedToSwapError
-    game = get_game(session, game_id)
-    if game not in gamer.games:
-        raise GameNotLinkedToGamerError
-    if game not in swap.games:
-        raise GameNotLinkedToSwapError
-    swap.games.remove(game)
-    session.commit()
