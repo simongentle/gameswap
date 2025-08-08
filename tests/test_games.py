@@ -32,6 +32,16 @@ def test_create_game_incomplete(client: TestClient) -> None:
     assert response.status_code == 422, response.text
 
 
+def test_create_game_valid_request_empty_database(client: TestClient) -> None:
+    game_data = {
+        "title": "Sonic The Hedgehog",
+        "platform": "SEGA Mega Drive",
+        "gamer_id": 1,
+    }
+    response = client.post("/games", json=game_data)
+    assert response.status_code == 422, response.text
+
+
 def test_get_game(session: Session, client: TestClient) -> None:
     gamer = Gamer(name="Player One", email="press@start.com")
     session.add(gamer)

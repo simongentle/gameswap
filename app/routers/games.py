@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+import app.crud.gamers as gamers
 import app.crud.games as games
 from app.dependencies.database import get_session
 from app.schemas.game import Game, GameCreate, GameUpdate
@@ -11,7 +12,10 @@ router = APIRouter()
 
 @router.post("/games", response_model=Game)
 def create_game(game: GameCreate, session: Session = Depends(get_session)):
-    return games.create_game(session, game)
+    try:
+        return games.create_game(session, game)
+    except gamers.GamerNotFoundError as exc:
+        raise HTTPException(status_code=422) from exc
 
 
 @router.get("/games", response_model=list[Game]) 

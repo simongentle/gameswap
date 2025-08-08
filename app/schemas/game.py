@@ -5,7 +5,6 @@ class GameBase(BaseModel):
     title: str
     platform: str
     gamer_id: int
-    swap_id: int | None = None
 
 
 class GameCreate(GameBase):
@@ -19,3 +18,4 @@ class GameUpdate(BaseModel):
 
 class Game(GameBase):
     id: int
+    swap_id: int | None = None

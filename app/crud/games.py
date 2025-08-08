@@ -1,5 +1,7 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.crud.gamers import GamerNotFoundError
 from app.models import Game 
 from app.schemas.game import GameCreate, GameUpdate
 
@@ -23,7 +25,11 @@ def get_games(session: Session) -> list[Game]:
 def create_game(session: Session, params: GameCreate) -> Game:
     game = Game(**params.model_dump())
     session.add(game)
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError as exc:
+        session.rollback()
+        raise GamerNotFoundError from exc
     session.refresh(game)
     return game
     
