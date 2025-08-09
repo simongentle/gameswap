@@ -65,48 +65,50 @@ def test_create_swap(session: Session, client: TestClient) -> None:
     assert len(acceptor.acceptor_swaps) == 1
 
 
-def test_create_swap_past_return_date(session: Session, client: TestClient) -> None:
+def test_create_swap_past_return_date(client: TestClient) -> None:
     return_date = dt.date.today() - dt.timedelta(weeks=2)
-    
-    proposer = Gamer(name="Player One", email="press@start.com")
-    acceptor = Gamer(name="Player Two", email="insert@coin.com")
-    session.add_all([proposer, acceptor])
-    session.commit()
-
-    proposer_game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=proposer.id)
-    acceptor_game = Game(title="Super Mario Land", platform="GAME BOY", gamer_id=acceptor.id)
-    session.add_all([proposer_game, acceptor_game])
-    session.commit()
-
+    proposer_game = {
+        "id": 1,
+        "title": "Sonic The Hedgehog",
+        "platform": "SEGA Mega Drive",
+        "gamer_id": 1,
+    }
+    acceptor_game = {
+        "id": 2,
+        "title": "Super Mario Land", 
+        "platform": "GAME BOY", 
+        "gamer_id": 2,
+    }
     swap_data = {
         "return_date": return_date.strftime("%Y-%m-%d"),
-        "proposer_id": proposer.id,
-        "acceptor_id": acceptor.id,
-        "games": [to_dict(game) for game in (proposer_game, acceptor_game)]
+        "proposer_id": 1,
+        "acceptor_id": 2,
+        "games": [proposer_game, acceptor_game]
     }
     response = client.post("/swaps", json=swap_data)
 
     assert response.status_code == 422, response.text
 
 
-def test_create_swap_duplicate_game_info(session: Session, client: TestClient) -> None:
-    return_date = dt.date.today() + dt.timedelta(weeks=2)
-    
-    proposer = Gamer(name="Player One", email="press@start.com")
-    acceptor = Gamer(name="Player Two", email="insert@coin.com")
-    session.add_all([proposer, acceptor])
-    session.commit()
-
-    proposer_game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=proposer.id)
-    acceptor_game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=acceptor.id)
-    session.add_all([proposer_game, acceptor_game])
-    session.commit()
-
+def test_create_swap_duplicate_game_info(client: TestClient) -> None:
+    return_date = dt.date.today() + dt.timedelta(weeks=2) 
+    proposer_game = {
+        "id": 1,
+        "title": "Sonic The Hedgehog",
+        "platform": "SEGA Mega Drive",
+        "gamer_id": 1,
+    }
+    acceptor_game = {
+        "id": 2,
+        "title": "Sonic The Hedgehog",
+        "platform": "SEGA Mega Drive",
+        "gamer_id": 2,
+    }
     swap_data = {
         "return_date": return_date.strftime("%Y-%m-%d"),
-        "proposer_id": proposer.id,
-        "acceptor_id": acceptor.id,
-        "games": [to_dict(game) for game in (proposer_game, acceptor_game)]
+        "proposer_id": 1,
+        "acceptor_id": 2,
+        "games": [proposer_game, acceptor_game]
     }
     response = client.post("/swaps", json=swap_data)
 
