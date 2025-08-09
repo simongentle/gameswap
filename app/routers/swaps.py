@@ -22,11 +22,7 @@ def create_swap(
 ):
     try:
         return swaps.create_swap(session, swap, notification_service)
-    except gamers.GamerNotFoundError as exc:
-        raise HTTPException(status_code=422) from exc
-    except games.GameNotFoundError as exc:
-        raise HTTPException(status_code=422) from exc
-    except swaps.GameLinkedToDifferentGamerError as exc:
+    except swaps.CreateSwapError as exc:
         raise HTTPException(status_code=422) from exc
 
 

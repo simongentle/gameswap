@@ -24,17 +24,14 @@ def swap(session: Session) -> Swap:
     swap = Swap(return_date=return_date, proposer_id=proposer.id, acceptor_id=acceptor.id)
     session.add(swap)
     session.commit()
-
-    for game in (proposer_game, acceptor_game):
-        game.swap_id = swap.id
+    swap.games = [proposer_game, acceptor_game]
     session.commit()
 
     return swap
 
 
 def test_create_swap(session: Session, client: TestClient) -> None:
-    return_date = dt.date.today() + dt.timedelta(weeks=2)
-
+    # Populate databse with gamers and games
     proposer = Gamer(name="Player One", email="press@start.com")
     acceptor = Gamer(name="Player Two", email="insert@coin.com")
     session.add_all([proposer, acceptor])
@@ -45,11 +42,12 @@ def test_create_swap(session: Session, client: TestClient) -> None:
     session.add_all([proposer_game, acceptor_game])
     session.commit()
 
+    # Create swap
+    return_date = dt.date.today() + dt.timedelta(weeks=2)
     swap_data = {
         "return_date": return_date.strftime("%Y-%m-%d"),
-        "proposer_id": proposer.id,
-        "acceptor_id": acceptor.id,
-        "games": [to_dict(game) for game in (proposer_game, acceptor_game)]
+        "proposer": {"id": proposer.id, "game_ids": [proposer_game.id]},
+        "acceptor": {"id": acceptor.id, "game_ids": [acceptor_game.id]},
     }
     response = client.post("/swaps", json=swap_data)
     data = response.json()
@@ -59,7 +57,7 @@ def test_create_swap(session: Session, client: TestClient) -> None:
         "id" in data
         and data["return_date"] == swap_data["return_date"]
         and len(data["games"]) == 2
-        and [game["id"] == data["id"] for game in data["games"]]
+        and [game["swap_id"] == data["id"] for game in data["games"]]
     )
     assert len(proposer.proposer_swaps) == 1
     assert len(acceptor.acceptor_swaps) == 1
@@ -67,23 +65,10 @@ def test_create_swap(session: Session, client: TestClient) -> None:
 
 def test_create_swap_past_return_date(client: TestClient) -> None:
     return_date = dt.date.today() - dt.timedelta(weeks=2)
-    proposer_game = {
-        "id": 1,
-        "title": "Sonic The Hedgehog",
-        "platform": "SEGA Mega Drive",
-        "gamer_id": 1,
-    }
-    acceptor_game = {
-        "id": 2,
-        "title": "Super Mario Land", 
-        "platform": "GAME BOY", 
-        "gamer_id": 2,
-    }
     swap_data = {
         "return_date": return_date.strftime("%Y-%m-%d"),
-        "proposer_id": 1,
-        "acceptor_id": 2,
-        "games": [proposer_game, acceptor_game]
+        "proposer": {"id": 1, "game_ids": [1]},
+        "acceptor": {"id": 2, "game_ids": [2]},
     }
     response = client.post("/swaps", json=swap_data)
 
@@ -92,23 +77,10 @@ def test_create_swap_past_return_date(client: TestClient) -> None:
 
 def test_create_swap_duplicate_game_info(client: TestClient) -> None:
     return_date = dt.date.today() + dt.timedelta(weeks=2) 
-    proposer_game = {
-        "id": 1,
-        "title": "Sonic The Hedgehog",
-        "platform": "SEGA Mega Drive",
-        "gamer_id": 1,
-    }
-    acceptor_game = {
-        "id": 2,
-        "title": "Sonic The Hedgehog",
-        "platform": "SEGA Mega Drive",
-        "gamer_id": 2,
-    }
     swap_data = {
         "return_date": return_date.strftime("%Y-%m-%d"),
-        "proposer_id": 1,
-        "acceptor_id": 2,
-        "games": [proposer_game, acceptor_game]
+        "proposer": {"id": 1, "game_ids": [1, 2]},
+        "acceptor": {"id": 2, "game_ids": [2, 3]},
     }
     response = client.post("/swaps", json=swap_data)
 
@@ -118,23 +90,10 @@ def test_create_swap_duplicate_game_info(client: TestClient) -> None:
 def test_create_swap_valid_request_empty_database(client: TestClient, session: Session) -> None:
     # Valid request:
     return_date = dt.date.today() + dt.timedelta(weeks=2)
-    proposer_game = {
-        "id": 1,
-        "title": "Sonic The Hedgehog",
-        "platform": "SEGA Mega Drive",
-        "gamer_id": 1,
-    }
-    acceptor_game = {
-        "id": 2,
-        "title": "Super Mario Land", 
-        "platform": "GAME BOY", 
-        "gamer_id": 2,
-    }
     swap_data = {
         "return_date": return_date.strftime("%Y-%m-%d"),
-        "proposer_id": 1,
-        "acceptor_id": 2,
-        "games": [proposer_game, acceptor_game]
+        "proposer": {"id": 1, "game_ids": [1]},
+        "acceptor": {"id": 2, "game_ids": [2]},
     }
     
     # Execute request on empty database:
@@ -166,23 +125,10 @@ def test_create_swap_valid_request_inconsistent_with_database(
 
     # Valid request, but wrong game assigned to each gamer:
     return_date = dt.date.today() + dt.timedelta(weeks=2)
-    proposer_game = {
-        "id": 3,
-        "title": "game3",
-        "platform": "platform",
-        "gamer_id": 1,
-    }
-    acceptor_game = {
-        "id": 4,
-        "title": "game4", 
-        "platform": "platform", 
-        "gamer_id": 2,
-    }
     swap_data = {
         "return_date": return_date.strftime("%Y-%m-%d"),
-        "proposer_id": 1,
-        "acceptor_id": 2,
-        "games": [proposer_game, acceptor_game]
+        "proposer": {"id": 1, "game_ids": [3]},
+        "acceptor": {"id": 2, "game_ids": [4]},
     }
     
     # Execute request:
