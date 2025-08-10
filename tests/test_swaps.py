@@ -130,8 +130,24 @@ def test_create_swap_valid_request_inconsistent_with_database(
         "proposer": {"id": 1, "game_ids": [3]},
         "acceptor": {"id": 2, "game_ids": [4]},
     }
-    
-    # Execute request:
+
+    response = client.post("/swaps", json=swap_data)
+    assert response.status_code == 422, response.text
+
+
+def test_create_swap_valid_request_games_in_existing_swap(swap: Swap, client: TestClient) -> None:
+    # Find game IDs for existing swap:
+    proposer_game_ids = [game.id for game in swap.games if game.gamer_id == swap.proposer_id]
+    acceptor_game_ids = [game.id for game in swap.games if game.gamer_id == swap.acceptor_id]
+
+    # Valid request, but games in existing swap: 
+    return_date = dt.date.today() + dt.timedelta(weeks=2)
+    swap_data = {
+        "return_date": return_date.strftime("%Y-%m-%d"),
+        "proposer": {"id": swap.proposer_id, "game_ids": proposer_game_ids},
+        "acceptor": {"id": swap.acceptor_id, "game_ids": acceptor_game_ids},
+    }
+
     response = client.post("/swaps", json=swap_data)
     assert response.status_code == 422, response.text
 
