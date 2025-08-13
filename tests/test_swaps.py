@@ -24,7 +24,8 @@ def swap(session: Session) -> Swap:
     swap = Swap(return_date=return_date, proposer_id=proposer.id, acceptor_id=acceptor.id)
     session.add(swap)
     session.commit()
-    swap.games = [proposer_game, acceptor_game]
+    swap.games.append(proposer_game)
+    swap.games.append(acceptor_game)
     session.commit()
 
     return swap
@@ -75,7 +76,7 @@ def test_create_swap_past_return_date(client: TestClient) -> None:
     assert response.status_code == 422, response.text
 
 
-def test_create_swap_duplicate_game_info(client: TestClient) -> None:
+def test_create_swap_duplicate_game_ids(client: TestClient) -> None:
     return_date = dt.date.today() + dt.timedelta(weeks=2) 
     swap_data = {
         "return_date": return_date.strftime("%Y-%m-%d"),
@@ -110,7 +111,7 @@ def test_create_swap_valid_request_empty_database(client: TestClient, session: S
     assert response.status_code == 422, response.text
 
 
-def test_create_swap_valid_request_inconsistent_with_database(
+def test_create_swap_valid_request_incorrect_games_assigned_to_gamers(
         session: Session,
         client: TestClient, 
     ) -> None:
@@ -132,6 +133,29 @@ def test_create_swap_valid_request_inconsistent_with_database(
     }
 
     response = client.post("/swaps", json=swap_data)
+    assert response.status_code == 422, response.text
+
+
+def test_create_swap_valid_request_duplicate_game_info(session: Session, client: TestClient) -> None:
+    return_date = dt.date.today() + dt.timedelta(weeks=2) 
+
+    proposer = Gamer(name="Player One", email="press@start.com")
+    acceptor = Gamer(name="Player Two", email="insert@coin.com")
+    session.add_all([proposer, acceptor])
+    session.commit()
+
+    proposer_game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=proposer.id)
+    acceptor_game = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=acceptor.id)
+    session.add_all([proposer_game, acceptor_game])
+    session.commit()
+
+    swap_data = {
+        "return_date": return_date.strftime("%Y-%m-%d"),
+        "proposer": {"id": proposer.id, "game_ids": [proposer_game.id]},
+        "acceptor": {"id": acceptor.id, "game_ids": [acceptor_game.id]},
+    }
+    response = client.post("/swaps", json=swap_data)
+
     assert response.status_code == 422, response.text
 
 

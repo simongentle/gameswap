@@ -4,7 +4,7 @@ from typing import Protocol
 
 from app.crud.games import GameNotFoundError, get_game
 from app.dependencies.notifications import Event, Notification
-from app.models import Game, Gamer, Swap
+from app.models import Swap
 from app.schemas.swap import SwapCreate, SwapUpdate
 
 
@@ -12,7 +12,7 @@ class SwapNotFoundError(Exception):
     pass
 
 
-class CreateSwapError(Exception):
+class InvalidSwapError(Exception):
     pass
 
 
@@ -49,45 +49,12 @@ def get_swaps(session: Session) -> list[Swap]:
     return swaps
 
 
-def validate_games_for_swap(session: Session, params: SwapCreate) -> list[Game]:
-    """
-    A swap must involve at least two games
-    A swap must involve at least one of the proposer's games and at least one of the acceptor's games.
-    Every game in a swap must be owned by either the proposer or the acceptor.
-    A swap involves at most one game with a given (title, platform).
-    A game can be in at most one swap at a time.
-    """
-    # Check if games exist, and load for subsequent checks if they do
-    try:
-        proposer_games = [get_game(session, game_id) for game_id in params.proposer.game_ids] 
-        acceptor_games = [get_game(session, game_id) for game_id in params.acceptor.game_ids] 
-    except GameNotFoundError as exc:
-        raise CreateSwapError from exc
-    
-    # Check if games assigned to specified gamers
-    if any([game.gamer_id != params.proposer.id for game in proposer_games]):
-        raise CreateSwapError
-    if any([game.gamer_id != params.acceptor.id for game in acceptor_games]):
-        raise CreateSwapError
-
-    # Check if at least one game per gamer with unique info
-    game_info = [(game.title, game.platform) for game in proposer_games + acceptor_games]
-    if len(game_info) != len(set(game_info)):
-        raise CreateSwapError
-    
-    # Check if games not assigned to another swap
-    if any([game.swap_id is not None for game in proposer_games + acceptor_games]):
-        raise CreateSwapError
-    
-    return proposer_games + acceptor_games
-
-
 def create_swap(
         session: Session, 
         params: SwapCreate, 
         notification_service: NotificationService,
     ) -> Swap:
-    # Construct swap without games, fails if proposer/acceptor does not exist
+    # Construct swap without games unless proposer/acceptor does not exist:
     swap = Swap(
         return_date=params.return_date,
         proposer_id=params.proposer.id,
@@ -98,13 +65,24 @@ def create_swap(
         session.commit()
     except IntegrityError as exc:
         session.rollback()
-        raise CreateSwapError
+        raise InvalidSwapError(
+            f"Gamer {params.proposer.id} or {params.acceptor.id} not found."
+        ) from exc
     
-    # Validate games for swap
-    validated_games = validate_games_for_swap(session, params)
+    # Load games for swap unless a game does not exist:
+    try:
+        games = [get_game(session, game_id) 
+                 for game_id in params.proposer.game_ids | params.acceptor.game_ids]
+    except GameNotFoundError as exc:
+        raise InvalidSwapError(str(exc)) from exc
+    
+    # Assign games to swap unless validation rules broken:
+    try:
+        for game in games:
+            swap.games.append(game)
+    except ValueError as exc:
+        raise InvalidSwapError(str(exc)) from exc
 
-    # Assign validated games to swap
-    swap.games = validated_games
     session.commit()
     session.refresh(swap)
 

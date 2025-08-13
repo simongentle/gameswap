@@ -1,6 +1,6 @@
 import datetime as dt
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
 from typing import Any
 
 
@@ -58,4 +58,21 @@ class Swap(Base):
     def is_due(self) -> bool:
         days_remaining = (self.return_date - dt.date.today()).days
         return days_remaining <= SWAP_DUE_THRESHOLD_IN_DAYS
+    
+    @validates("games")
+    def validate_game(self, _, game: Game):
+        if game.gamer_id not in (self.proposer_id, self.acceptor_id):
+            raise ValueError(
+                f"Game {game.id} not owned by gamer {self.proposer_id} of {self.acceptor_id}."
+            )
+        if any([game.title == swap_game.title and game.platform == swap_game.platform 
+                for swap_game in self.games]):
+            raise ValueError(
+                f"Duplicate game in swap with title='{game.title}' and platform='{game.platform}'."
+            )
+        if game.swap_id is not None:
+            raise ValueError(
+                f"Game {game.id} is already in swap {game.swap_id}."
+            )
+        return game
     

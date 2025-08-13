@@ -13,7 +13,7 @@ class GameNotFoundError(Exception):
 def get_game(session: Session, game_id: int) -> Game:
     game = session.get(Game, game_id)
     if game is None:
-        raise GameNotFoundError
+        raise GameNotFoundError(f"Game {game_id} not found.")
     return game
 
 
