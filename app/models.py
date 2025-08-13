@@ -1,7 +1,6 @@
 import datetime as dt
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
-from typing import Any
 
 
 SWAP_DUE_THRESHOLD_IN_DAYS = 7
@@ -9,12 +8,6 @@ SWAP_DUE_THRESHOLD_IN_DAYS = 7
 
 class Base(DeclarativeBase):
     pass
-
-
-def to_dict(obj: Base | None) -> dict[str, Any]:
-    if obj is None:
-        return {}
-    return {c.name: getattr(obj, c.name) for c in obj.__table__.columns}
 
 
 class Game(Base):
@@ -55,10 +48,6 @@ class Swap(Base):
     acceptor_id: Mapped[int] = mapped_column(ForeignKey("gamer.id"))
     acceptor: Mapped[Gamer] = relationship(back_populates="acceptor_swaps", foreign_keys=acceptor_id)
     
-    def is_due(self) -> bool:
-        days_remaining = (self.return_date - dt.date.today()).days
-        return days_remaining <= SWAP_DUE_THRESHOLD_IN_DAYS
-    
     @validates("games")
     def validate_game(self, _, game: Game):
         if game.gamer_id not in (self.proposer_id, self.acceptor_id):
@@ -75,4 +64,8 @@ class Swap(Base):
                 f"Game {game.id} is already in swap {game.swap_id}."
             )
         return game
+    
+    def is_due(self) -> bool:
+        days_remaining = (self.return_date - dt.date.today()).days
+        return days_remaining <= SWAP_DUE_THRESHOLD_IN_DAYS
     
