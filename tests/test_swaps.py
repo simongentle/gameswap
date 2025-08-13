@@ -228,6 +228,9 @@ def test_delete_swap(swap: Swap, client: TestClient, session: Session) -> None:
 
     assert response.status_code == 200, response.text
     assert len(data) == 2
+    assert (
+        data[0]["swap_id"] is None and data[1]["swap_id"] is None
+    )
     
 
 def test_delete_swap_not_exists(client: TestClient) -> None:
