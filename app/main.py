@@ -2,19 +2,19 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import uvicorn
 
-from app.dependencies.database import init_db
+from app.dependencies.database import configured_session, init_db
 from app.routers import games, gamers, swaps
 
 
 PROJECT_NAME = "gameswap"
 PROJECT_SUMMARY = "track game swaps with friends"
-DB_FILE = "sqlite:///gameswap.db"
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db(DB_FILE)
-    yield
+    with configured_session() as session:
+        init_db(session)
+        yield
 
 
 app = FastAPI(
