@@ -1,5 +1,3 @@
-import datetime as dt
-
 from sqlalchemy import delete, event
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -14,7 +12,7 @@ configured_session = sessionmaker(autocommit=False, autoflush=False, bind=engine
 
 
 def delete_expired_swaps(session: Session) -> None:    
-    session.execute(delete(Swap).where(Swap.return_date < dt.date.today()))
+    session.execute(delete(Swap).where(Swap.is_expired()))
     session.commit()
 
 

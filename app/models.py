@@ -19,7 +19,7 @@ class Game(Base):
     gamer_id: Mapped[int] = mapped_column(ForeignKey("gamer.id", ondelete="CASCADE"))
     gamer: Mapped["Gamer"] = relationship(back_populates="games")
 
-    swap_id: Mapped[int | None] = mapped_column(ForeignKey("swap.id"))
+    swap_id: Mapped[int | None] = mapped_column(ForeignKey("swap.id", ondelete="SET NULL"))
     swap: Mapped["Swap | None"] = relationship(back_populates="games")
 
 
@@ -68,4 +68,8 @@ class Swap(Base):
     def is_due(self) -> bool:
         days_remaining = (self.return_date - dt.date.today()).days
         return days_remaining <= SWAP_DUE_THRESHOLD_IN_DAYS
+    
+    @classmethod
+    def is_expired(cls) -> bool:
+        return cls.return_date < dt.date.today()
     
