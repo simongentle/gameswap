@@ -1,3 +1,4 @@
+from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from typing import Protocol
@@ -111,3 +112,8 @@ def delete_swap(session: Session, swap_id: int) -> Swap:
     session.delete(swap)
     session.commit()
     return swap
+
+
+def delete_expired_swaps(session: Session) -> None:   
+    session.execute(delete(Swap).where(Swap.is_expired()))
+    session.commit()

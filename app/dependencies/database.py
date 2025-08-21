@@ -1,8 +1,8 @@
-from sqlalchemy import delete, event
+from sqlalchemy import event
 from sqlalchemy.engine import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
-from app.models import Base, Swap
+from app.models import Base
 
 
 DB_FILE = "sqlite:///gameswap.db"
@@ -11,15 +11,8 @@ event.listen(engine, 'connect', lambda c, _: c.execute('pragma foreign_keys=on')
 configured_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def delete_expired_swaps(session: Session) -> None:    
-    session.execute(delete(Swap).where(Swap.is_expired()))
-    session.commit()
-
-
-def init_db(session: Session) -> None:
+def init_db() -> None:
     Base.metadata.create_all(bind=engine)
-
-    delete_expired_swaps(session)    
 
 
 def get_session():

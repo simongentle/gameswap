@@ -1,7 +1,9 @@
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import uvicorn
 
+from app.crud.swaps import delete_expired_swaps
 from app.dependencies.database import configured_session, init_db
 from app.routers import games, gamers, swaps
 
@@ -12,9 +14,15 @@ PROJECT_SUMMARY = "track game swaps with friends"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    init_db()
+    scheduler = AsyncIOScheduler()
+
     with configured_session() as session:
-        init_db(session)
-        yield
+        scheduler.add_job(delete_expired_swaps, "cron", args=(session,), hour="0", minute="1")
+
+    scheduler.start()
+    yield
+    scheduler.shutdown()
 
 
 app = FastAPI(
