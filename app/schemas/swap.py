@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Annotated
 from pydantic import BaseModel, Field, FutureDate, model_validator
 
@@ -32,4 +33,5 @@ class SwapUpdate(BaseModel):
 
 class Swap(SwapBase):
     id: int
+    return_date: date
     games: list[Game]

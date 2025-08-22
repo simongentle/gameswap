@@ -193,6 +193,14 @@ def test_get_swap_not_exists(client: TestClient) -> None:
     assert response.status_code == 404, response.text
 
 
+def test_manually_expired_swap_allowed(swap: Swap, session: Session, client: TestClient) -> None:
+    swap.return_date -= dt.timedelta(weeks=4)
+    session.commit()
+
+    response = client.get(f"/swaps/{swap.id}")
+    assert response.status_code == 200, response.text
+
+
 def test_update_swap(swap: Swap, client: TestClient) -> None:
     later_return_date = swap.return_date + dt.timedelta(weeks=2)
     response = client.patch(
