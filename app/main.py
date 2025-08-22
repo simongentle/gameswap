@@ -12,14 +12,16 @@ PROJECT_NAME = "gameswap"
 PROJECT_SUMMARY = "track game swaps with friends"
 
 
+def clean_db() -> None:
+    with configured_session() as session:
+        delete_expired_swaps(session)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
     scheduler = AsyncIOScheduler()
-
-    with configured_session() as session:
-        scheduler.add_job(delete_expired_swaps, "cron", args=(session,), hour="0", minute="1")
-
+    scheduler.add_job(clean_db, "cron", hour="0", minute="1")
     scheduler.start()
     yield
     scheduler.shutdown()
