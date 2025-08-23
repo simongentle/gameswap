@@ -1,30 +1,19 @@
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import uvicorn
 
-from app.crud.swaps import delete_expired_swaps
-from app.dependencies.database import configured_session, init_db
-from app.routers import games, gamers, swaps
+from app.dependencies.database import init_db
+from app.routers import games, gamers
 
 
 PROJECT_NAME = "gameswap"
 PROJECT_SUMMARY = "track game swaps with friends"
 
 
-def clean_db() -> None:
-    with configured_session() as session:
-        delete_expired_swaps(session)
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(clean_db, "cron", hour="0", minute="1")
-    scheduler.start()
     yield
-    scheduler.shutdown()
 
 
 app = FastAPI(
@@ -41,7 +30,6 @@ def read_root():
 
 app.include_router(gamers.router, tags=["gamers"])
 app.include_router(games.router, tags=["games"])
-app.include_router(swaps.router, tags=["swaps"])
 
 
 def main():

@@ -18,4 +18,3 @@ class GameUpdate(BaseModel):
 
 class Game(GameBase):
     id: int
-    swap_id: int | None = None
