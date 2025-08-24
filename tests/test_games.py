@@ -23,6 +23,7 @@ def test_create_game(session: Session, client: TestClient) -> None:
         and data["title"] == game_data["title"]
         and data["platform"] == game_data["platform"]
         and data["gamer_id"] == game_data["gamer_id"]
+        and data["available"] == True
     )
 
 
@@ -59,6 +60,7 @@ def test_get_game(session: Session, client: TestClient) -> None:
         and data["title"] == game.title
         and data["platform"] == game.platform
         and data["gamer_id"] == game.gamer_id
+        and data["available"] == True
     )
 
 
@@ -93,15 +95,15 @@ def test_update_game(session: Session, client: TestClient) -> None:
     session.add(game)
     session.commit()
 
-    updated_title = "Ristar"
-    response = client.patch(f"/games/{game.id}", json={"title": updated_title})
+    response = client.patch(f"/games/{game.id}", json={"available": False})
     data = response.json()
     
     assert response.status_code == 200, response.text
     assert (
         data["id"] == game.id
-        and data["title"] == game.title == updated_title
+        and data["title"] == game.title 
         and data["platform"] == game.platform
+        and data["available"] == False
     )
 
 
