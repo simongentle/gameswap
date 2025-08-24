@@ -1,4 +1,3 @@
-from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -56,12 +55,6 @@ def delete_gamer(session: Session, gamer_id: int) -> Gamer:
     session.delete(gamer)
     session.commit()
     return gamer
-
-
-def get_games_owned_by_gamer(session: Session, gamer_id: int) -> list[Game]:
-    result = session.execute(select(Game).where(Game.gamer_id == gamer_id))
-    games = result.scalars().all()
-    return games
 
 
 def get_gamers_who_own_game(session: Session, title: str | None, platform: str | None) -> list[Gamer]:
