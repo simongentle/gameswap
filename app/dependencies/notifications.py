@@ -4,6 +4,7 @@ from typing import Callable
 
 
 class Event(StrEnum):
+    GAMER_CREATED = "gamer_created"
     SWAP_CREATED = "swap_created"
     SWAP_DUE = "swap_return_due"
 
@@ -38,6 +39,10 @@ class NotificationService:
             handler(notification)
 
 
+def handle_create_gamer(notification: Notification) -> None:
+    print(notification.message)
+
+
 def handle_create_swap(notification: Notification) -> None:
     print(notification.message)
 
@@ -48,6 +53,7 @@ def handle_swap_due(notification: Notification) -> None:
 
 def get_notification_service() -> NotificationService:
     service = NotificationService()
+    service.subscribe(Event.GAMER_CREATED, handle_create_gamer)
     service.subscribe(Event.SWAP_CREATED, handle_create_swap)
     service.subscribe(Event.SWAP_DUE, handle_swap_due)
     return service

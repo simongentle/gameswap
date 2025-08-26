@@ -29,6 +29,21 @@ def test_create_gamer_invalid_email(client: TestClient) -> None:
     assert response.status_code == 422, response.text
 
 
+def test_create_gamer_email_not_unique(session: Session, client: TestClient) -> None:
+    test_email = "press@start.com"
+
+    gamer1 = Gamer(name="Player One", email=test_email)
+    session.add(gamer1)
+    session.commit()
+
+    gamer2_data = {
+        "name": "Player Two",
+        "email": test_email,
+    }
+    response = client.post("/gamers", json=gamer2_data)
+    assert response.status_code == 422, response.text
+
+
 def test_get_gamers(session: Session, client: TestClient) -> None:
     gamer1 = Gamer(name="Player One", email="press@start.com")
     gamer2 = Gamer(name="Player Two", email="insert@coin.com")
@@ -80,21 +95,6 @@ def test_get_gamer(session: Session, client: TestClient) -> None:
 def test_get_gamer_not_exists(client: TestClient) -> None:
     response = client.get(f"/gamers/{0}")
     assert response.status_code == 404, response.text
-
-
-def test_gamer_email_not_unique(session: Session, client: TestClient) -> None:
-    test_email = "press@start.com"
-
-    gamer1 = Gamer(name="Player One", email=test_email)
-    session.add(gamer1)
-    session.commit()
-
-    gamer2_data = {
-        "name": "Player Two",
-        "email": test_email,
-    }
-    response = client.post("/gamers", json=gamer2_data)
-    assert response.status_code == 422, response.text
 
 
 def test_update_gamer(session: Session, client: TestClient) -> None:

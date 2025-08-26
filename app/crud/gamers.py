@@ -1,6 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.dependencies.notifications import Event, Notification, NotificationService
 from app.models import Game, Gamer
 from app.schemas.gamer import GamerCreate, GamerUpdate
 
@@ -25,7 +26,11 @@ def get_gamers(session: Session) -> list[Gamer]:
     return gamers
 
 
-def create_gamer(session: Session, params: GamerCreate) -> Gamer:
+def create_gamer(
+        session: Session, 
+        params: GamerCreate,
+        notification_service: NotificationService,
+    ) -> Gamer:
     gamer = Gamer(**params.model_dump())
     session.add(gamer)
     try:
@@ -34,6 +39,14 @@ def create_gamer(session: Session, params: GamerCreate) -> Gamer:
         session.rollback()
         raise DuplicateGamerError from exc
     session.refresh(gamer)
+
+    notification_service.post(
+        Notification(
+            event=Event.GAMER_CREATED,
+            message=f"Welcome {gamer.name}!"
+        )
+    )
+
     return gamer
     
 

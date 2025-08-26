@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 import app.crud.gamers as gamers
 from app.dependencies.database import get_session
+from app.dependencies.notifications import NotificationService, get_notification_service
 from app.schemas.game import Game
 from app.schemas.gamer import Gamer, GamerCreate, GamerUpdate
 
@@ -11,9 +12,12 @@ router = APIRouter()
 
 
 @router.post("/gamers", response_model=Gamer)
-def create_gamer(gamer: GamerCreate, session: Session = Depends(get_session)):
+def create_gamer(
+    gamer: GamerCreate, 
+    session: Session = Depends(get_session),
+    notification_service: NotificationService = Depends(get_notification_service)):
     try:
-        return gamers.create_gamer(session, gamer)
+        return gamers.create_gamer(session, gamer, notification_service)
     except gamers.DuplicateGamerError as exc:
         raise HTTPException(status_code=422) from exc
 
