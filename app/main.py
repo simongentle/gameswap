@@ -7,7 +7,7 @@ from app.routers import games, gamers
 
 
 PROJECT_NAME = "gameswap"
-PROJECT_SUMMARY = "track game swaps with friends"
+PROJECT_SUMMARY = "swap games with friends"
 
 
 @asynccontextmanager
