@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException
 
 import app.crud.gamers as gamers
 import app.crud.games as games
-from app.dependencies.database import get_session
+from app.dependencies.database import SessionDep
 from app.schemas.game import Game, GameCreate, GameUpdate
 
 
@@ -11,7 +10,7 @@ router = APIRouter()
 
 
 @router.post("/games", response_model=Game)
-def create_game(game: GameCreate, session: Session = Depends(get_session)):
+def create_game(game: GameCreate, session: SessionDep):
     try:
         return games.create_game(session, game)
     except gamers.GamerNotFoundError as exc:
@@ -19,12 +18,12 @@ def create_game(game: GameCreate, session: Session = Depends(get_session)):
 
 
 @router.get("/games", response_model=list[Game]) 
-def get_games(session: Session = Depends(get_session)):
+def get_games(session: SessionDep):
     return games.get_games(session)
 
 
 @router.get("/games/{game_id}", response_model=Game) 
-def get_game(game_id: int, session: Session = Depends(get_session)):
+def get_game(game_id: int, session: SessionDep):
     try:
         return games.get_game(session, game_id)
     except games.GameNotFoundError as exc:
@@ -32,7 +31,7 @@ def get_game(game_id: int, session: Session = Depends(get_session)):
     
 
 @router.patch("/games/{game_id}", response_model=Game)
-def update_game(game_id: int, params: GameUpdate, session: Session = Depends(get_session)):
+def update_game(game_id: int, params: GameUpdate, session: SessionDep):
     try:
         return games.update_game(session, game_id, params)
     except games.GameNotFoundError as exc:
@@ -40,7 +39,7 @@ def update_game(game_id: int, params: GameUpdate, session: Session = Depends(get
     
 
 @router.delete("/games/{game_id}", response_model=Game) 
-def delete_game(game_id: int, session: Session = Depends(get_session)):
+def delete_game(game_id: int, session: SessionDep):
     try:
         return games.delete_game(session, game_id)
     except games.GameNotFoundError as exc:

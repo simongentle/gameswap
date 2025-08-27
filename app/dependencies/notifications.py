@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Callable
+from typing import Annotated, Callable
+
+from fastapi import Depends
 
 
 class Event(StrEnum):
@@ -46,3 +48,5 @@ def get_notification_service() -> NotificationService:
     service.subscribe(Event.GAMER_CREATED, handle_create_gamer)
     return service
     
+
+NotificationServiceDep = Annotated[NotificationService, Depends(get_notification_service)]

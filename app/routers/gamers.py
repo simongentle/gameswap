@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException
 
 import app.crud.gamers as gamers
-from app.dependencies.database import get_session
-from app.dependencies.notifications import NotificationService, get_notification_service
+from app.dependencies.database import SessionDep
+from app.dependencies.notifications import NotificationServiceDep
 from app.schemas.game import Game
 from app.schemas.gamer import Gamer, GamerCreate, GamerUpdate
 
@@ -14,8 +13,8 @@ router = APIRouter()
 @router.post("/gamers", response_model=Gamer)
 def create_gamer(
     gamer: GamerCreate, 
-    session: Session = Depends(get_session),
-    notification_service: NotificationService = Depends(get_notification_service)):
+    session: SessionDep,
+    notification_service: NotificationServiceDep):
     try:
         return gamers.create_gamer(session, gamer, notification_service)
     except gamers.DuplicateGamerError as exc:
@@ -24,9 +23,9 @@ def create_gamer(
 
 @router.get("/gamers", response_model=list[Gamer]) 
 def get_gamers(
+    session: SessionDep,
     title: str | None = None, 
     platform: str | None = None,
-    session: Session = Depends(get_session),
 ):
     if title or platform:
         return gamers.get_gamers_who_own_game(session, title, platform)
@@ -34,7 +33,7 @@ def get_gamers(
 
 
 @router.get("/gamers/{gamer_id}", response_model=Gamer) 
-def get_gamer(gamer_id: int, session: Session = Depends(get_session)):
+def get_gamer(gamer_id: int, session: SessionDep):
     try:
         return gamers.get_gamer(session, gamer_id)
     except gamers.GamerNotFoundError as exc:
@@ -42,7 +41,7 @@ def get_gamer(gamer_id: int, session: Session = Depends(get_session)):
     
 
 @router.patch("/gamers/{gamer_id}", response_model=Gamer)
-def update_gamer(gamer_id: int, params: GamerUpdate, session: Session = Depends(get_session)):
+def update_gamer(gamer_id: int, params: GamerUpdate, session: SessionDep):
     try:
         return gamers.update_gamer(session, gamer_id, params)
     except gamers.GamerNotFoundError as exc:
@@ -52,7 +51,7 @@ def update_gamer(gamer_id: int, params: GamerUpdate, session: Session = Depends(
     
 
 @router.delete("/gamers/{gamer_id}", response_model=Gamer) 
-def delete_gamer(gamer_id: int, session: Session = Depends(get_session)):
+def delete_gamer(gamer_id: int, session: SessionDep):
     try:
         return gamers.delete_gamer(session, gamer_id)
     except gamers.GamerNotFoundError as exc:
@@ -60,7 +59,7 @@ def delete_gamer(gamer_id: int, session: Session = Depends(get_session)):
     
 
 @router.get("/gamers/{gamer_id}/games", response_model=list[Game]) 
-def get_games_owned_by_gamer(gamer_id: int, session: Session = Depends(get_session)):
+def get_games_owned_by_gamer(gamer_id: int, session: SessionDep):
     try:
         gamer = gamers.get_gamer(session, gamer_id)
     except gamers.GamerNotFoundError as exc:

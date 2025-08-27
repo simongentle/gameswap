@@ -1,3 +1,4 @@
+from collections.abc import Generator
 import pytest
 
 from fastapi.testclient import TestClient
@@ -6,8 +7,8 @@ from sqlalchemy.orm import Session
 
 from app.dependencies.database import get_session
 from app.dependencies.notifications import Notification, get_notification_service
-from app.models import Base
 from app.main import app
+from app.models import Base
 
 
 class NotificationServiceMock:
@@ -16,7 +17,7 @@ class NotificationServiceMock:
     
 
 @pytest.fixture(name="session")
-def session_fixture():
+def session_fixture() -> Generator[Session, None, None]:
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
@@ -28,7 +29,7 @@ def session_fixture():
 
 
 @pytest.fixture(name="client")  
-def client_fixture(session: Session):  
+def client_fixture(session: Session) -> Generator[TestClient, None, None]:  
     def get_session_override():  
         return session
     

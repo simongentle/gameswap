@@ -1,6 +1,10 @@
+from collections.abc import Generator
+from typing import Annotated
+
+from fastapi import Depends
 from sqlalchemy import event
 from sqlalchemy.engine import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 from app.models import Base
 
@@ -15,6 +19,9 @@ def init_db() -> None:
     Base.metadata.create_all(bind=engine)
 
 
-def get_session():
+def get_session() -> Generator[Session, None, None]:
     with configured_session() as session:
         yield session
+
+
+SessionDep = Annotated[Session, Depends(get_session)]
