@@ -32,7 +32,7 @@ def test_create_game_incomplete(client: TestClient) -> None:
     assert response.status_code == 422, response.text
 
 
-def test_create_game_valid_request_empty_database(client: TestClient) -> None:
+def test_create_game_nonexistent_gamer(client: TestClient) -> None:
     game_data = {
         "title": "Sonic The Hedgehog",
         "platform": "SEGA Mega Drive",
