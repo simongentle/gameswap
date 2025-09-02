@@ -75,15 +75,22 @@ def test_get_games(session: Session, client: TestClient) -> None:
     session.commit()
 
     game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=gamer.id)
-    game2 = Game(title="Super Mario Land", platform="Nintendo GAME BOY", gamer_id=gamer.id)
-    session.add_all([game1, game2])
+    game2 = Game(title="Super Mario Land", platform="Nintendo GAME BOY", gamer_id=gamer.id, available=False)
+    game3 = Game(title="Ristar", platform="SEGA Mega Drive", gamer_id=gamer.id, available=False)
+    session.add_all([game1, game2, game3])
     session.commit()
 
     response = client.get("/games")
     data = response.json()
 
     assert response.status_code == 200, response.text
-    assert len(data) == 2
+    assert len(data) == 3
+
+    response = client.get("/games?available=True")
+    data = response.json()
+
+    assert response.status_code == 200, response.text
+    assert len(data) == 1
 
 
 def test_update_game(session: Session, client: TestClient) -> None:
