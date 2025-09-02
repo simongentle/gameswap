@@ -75,7 +75,7 @@ def test_get_games(session: Session, client: TestClient) -> None:
     session.commit()
 
     game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=gamer.id)
-    game2 = Game(title="Super Mario Land", platform="GAME BOY", gamer_id=gamer.id)
+    game2 = Game(title="Super Mario Land", platform="Nintendo GAME BOY", gamer_id=gamer.id)
     session.add_all([game1, game2])
     session.commit()
 
