@@ -9,23 +9,28 @@ API to swap games with friends
 - Pydantic
 - SQLAlchemy
 
-## Documentation
+## Usage
 
-Start the uvicorn session by running
+To explore the API:
 
-`python3 -m app.main`
+1. Start the uvicorn session: 
+    ```
+    python3 -m app.main
+    ```
 
-and then navigate to the interactive Swagger UI documentation:
+2. Navigate to the interactive Swagger UI documentation:
+    > <http://localhost:8000/docs>
 
-> <http://localhost:8000/docs>
+3. It's game time.
 
-NB: Must manually remove database file `gameswap.db` after closing the session.
+4. After closing the session, don't forget to manually remove the database file `gameswap.db`.
 
 
 ## Tests
 
 Endpoint tests rely on FastAPI's `TestClient` and use an in-memory SQLite database where necessary.
 
-Run tests in the terminal via
-
-`pytest tests`
+To run tests in the terminal:
+```
+pytest tests
+```
