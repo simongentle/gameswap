@@ -1,5 +1,5 @@
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
 
 
 class Base(DeclarativeBase):
@@ -46,3 +46,20 @@ class Swap(Base):
 
     acceptor_id: Mapped[int] = mapped_column(ForeignKey("gamer.id"))
     acceptor: Mapped[Gamer] = relationship(back_populates="acceptor_swaps", foreign_keys=acceptor_id)
+
+    @validates("games")
+    def validate_game(self, _, game: Game):
+        if game.gamer_id not in (self.proposer_id, self.acceptor_id):
+            raise ValueError(
+                f"Game {game.id} not owned by gamer {self.proposer_id} or {self.acceptor_id}."
+            )
+        if not game.is_available():
+            raise ValueError(
+                f"Game {game.id} is already in swap {game.swap_id}."
+            )
+        if any([game.title == swap_game.title and game.platform == swap_game.platform 
+                for swap_game in self.games]):
+            raise ValueError(
+                f"Duplicate game in swap with title='{game.title}' and platform='{game.platform}'."
+            )
+        return game
