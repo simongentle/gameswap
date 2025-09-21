@@ -54,7 +54,7 @@ class Swap(Base):
             )
         if not game.is_available():
             raise ValueError(
-                f"Game {game.id} is already in swap {game.swap_id}."
+                f"Game {game.id} is currently in a swap."
             )
         if any([game.title == swap_game.title and game.platform == swap_game.platform 
                 for swap_game in self.games]):

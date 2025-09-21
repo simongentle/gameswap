@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Game, Gamer
+from app.models import Game, Gamer, Swap
 
 
 def test_create_game(session: Session, client: TestClient) -> None:
@@ -128,4 +128,8 @@ def test_delete_game(session: Session, client: TestClient) -> None:
 def test_delete_game_not_exists(client: TestClient) -> None:
     response = client.delete(f"/games/{0}")
     assert response.status_code == 404, response.text
-    
+
+
+def test_cannot_delete_game_if_in_swap(swap: Swap, client: TestClient) -> None:
+    response = client.delete(f"/games/{swap.games[0].id}")
+    assert response.status_code == 422, response.text

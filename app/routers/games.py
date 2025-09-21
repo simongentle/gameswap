@@ -44,3 +44,5 @@ def delete_game(game_id: int, session: SessionDep):
         return games.delete_game(session, game_id)
     except games.GameNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
+    except games.GameUnavailableError as exc:
+        raise HTTPException(status_code=422) from exc
