@@ -53,6 +53,6 @@ def delete_game(session: Session, game_id: int) -> Game:
 
 
 def get_games_by_availability(session: Session, available: bool) -> list[Game]:
-    result = session.execute(select(Game).where(Game.available == available))
+    result = session.execute(select(Game).where(Game.is_available() == available))
     games = result.scalars().all()
     return games

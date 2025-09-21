@@ -11,13 +11,16 @@ class Game(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(index=True)
     platform: Mapped[str]
-    available: Mapped[bool] = mapped_column(default=True)
 
     gamer_id: Mapped[int] = mapped_column(ForeignKey("gamer.id", ondelete="CASCADE"))
     gamer: Mapped["Gamer"] = relationship(back_populates="games")
 
     swap_id: Mapped[int | None] = mapped_column(ForeignKey("swap.id", ondelete="SET NULL"))
     swap: Mapped["Swap | None"] = relationship(back_populates="games")
+
+    @classmethod
+    def is_available(cls) -> bool:
+        return cls.swap_id is not None
 
 
 class Gamer(Base):

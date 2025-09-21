@@ -23,7 +23,7 @@ def test_create_game(session: Session, client: TestClient) -> None:
         and data["title"] == game_data["title"]
         and data["platform"] == game_data["platform"]
         and data["gamer_id"] == game_data["gamer_id"]
-        and data["available"] == True
+        and data["swap_id"] is None
     )
 
 
@@ -60,7 +60,7 @@ def test_get_game(session: Session, client: TestClient) -> None:
         and data["title"] == game.title
         and data["platform"] == game.platform
         and data["gamer_id"] == game.gamer_id
-        and data["available"] == True
+        and data["swap_id"] is None
     )
 
 
@@ -75,8 +75,8 @@ def test_get_games(session: Session, client: TestClient) -> None:
     session.commit()
 
     game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=gamer.id)
-    game2 = Game(title="Super Mario Land", platform="Nintendo GAME BOY", gamer_id=gamer.id, available=False)
-    game3 = Game(title="Ristar", platform="SEGA Mega Drive", gamer_id=gamer.id, available=False)
+    game2 = Game(title="Super Mario Land", platform="Nintendo GAME BOY", gamer_id=gamer.id)
+    game3 = Game(title="Ristar", platform="SEGA Mega Drive", gamer_id=gamer.id)
     session.add_all([game1, game2, game3])
     session.commit()
 
@@ -90,7 +90,7 @@ def test_get_games(session: Session, client: TestClient) -> None:
     data = response.json()
 
     assert response.status_code == 200, response.text
-    assert len(data) == 1
+    assert len(data) == 3
 
 
 def test_update_game(session: Session, client: TestClient) -> None:
@@ -102,15 +102,16 @@ def test_update_game(session: Session, client: TestClient) -> None:
     session.add(game)
     session.commit()
 
-    response = client.patch(f"/games/{game.id}", json={"available": False})
+    new_platform = "SEGA Master System"
+    response = client.patch(f"/games/{game.id}", json={"platform": new_platform})
     data = response.json()
     
     assert response.status_code == 200, response.text
     assert (
         data["id"] == game.id
         and data["title"] == game.title 
-        and data["platform"] == game.platform
-        and data["available"] == False
+        and data["platform"] == game.platform == new_platform
+        and data["swap_id"] is None
     )
 
 
