@@ -49,13 +49,12 @@ def update_game(session: Session, game_id: int, params: GameUpdate) -> Game:
     return game
 
 
-def delete_game(session: Session, game_id: int) -> Game:    
+def delete_game(session: Session, game_id: int) -> None:    
     game = get_game(session, game_id)
     if not game.is_available():
         raise GameUnavailableError(f"Game {game.id} is currently in a swap.")
     session.delete(game)
     session.commit()
-    return game
 
 
 def get_available_games(session: Session) -> list[Game]:

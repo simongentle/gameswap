@@ -120,7 +120,7 @@ def test_delete_game(session: Session, client: TestClient) -> None:
     session.commit()
 
     response = client.delete(f"/games/{game.id}")
-    assert response.status_code == 200, response.text
+    assert response.status_code == 204, response.text
 
     game_in_db = session.get(Game, game.id)
     assert game_in_db is None

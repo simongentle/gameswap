@@ -63,11 +63,10 @@ def update_gamer(session: Session, gamer_id: int, params: GamerUpdate) -> Gamer:
     return gamer
 
 
-def delete_gamer(session: Session, gamer_id: int) -> Gamer:    
+def delete_gamer(session: Session, gamer_id: int) -> None:    
     gamer = get_gamer(session, gamer_id)
     session.delete(gamer)
     session.commit()
-    return gamer
 
 
 def get_gamers_who_own_game(session: Session, title: str | None, platform: str | None) -> list[Gamer]:
