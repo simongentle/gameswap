@@ -3,7 +3,7 @@ from fastapi import FastAPI
 import uvicorn
 
 from app.dependencies.database import init_db
-from app.routers import games, gamers
+from app.routers import games, gamers, swaps
 
 
 PROJECT_NAME = "gameswap"
@@ -30,6 +30,7 @@ def read_root():
 
 app.include_router(gamers.router, tags=["gamers"])
 app.include_router(games.router, tags=["games"])
+app.include_router(swaps.router, tags=["swaps"])
 
 
 def main():
