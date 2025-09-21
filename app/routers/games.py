@@ -18,7 +18,9 @@ def create_game(game: GameCreate, session: SessionDep):
 
 
 @router.get("/games", response_model=list[Game]) 
-def get_games(session: SessionDep):
+def get_games(session: SessionDep, only_available: bool = False):
+    if only_available:
+        return games.get_available_games(session)
     return games.get_games(session)
 
 
