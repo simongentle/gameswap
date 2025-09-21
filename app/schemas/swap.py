@@ -2,6 +2,7 @@ from typing import Annotated
 from pydantic import BaseModel, Field, model_validator
 
 from app.schemas.game import Game
+from app.schemas.gamer import Gamer
 
 
 class GamerWithGames(BaseModel):
@@ -24,6 +25,6 @@ class SwapCreate(BaseModel):
 
 class Swap(BaseModel):
     id: int
-    proposer_id: int
-    acceptor_id: int
+    proposer: Gamer
+    acceptor: Gamer
     games: list[Game]

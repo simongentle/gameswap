@@ -28,6 +28,8 @@ def test_create_swap(session: Session, client: TestClient) -> None:
     assert (
         "id" in data
         and len(data["games"]) == 2
+        and data["proposer"]["name"] == proposer.name
+        and data["acceptor"]["name"] == acceptor.name
         and [game["swap_id"] == data["id"] for game in data["games"]]
     )
     assert len(proposer.proposer_swaps) == 1
@@ -141,7 +143,7 @@ def test_get_swap_not_exists(client: TestClient) -> None:
 
 def test_delete_swap(swap: Swap, client: TestClient, session: Session) -> None:
     response = client.delete(f"/swaps/{swap.id}")
-    assert response.status_code == 200, response.text
+    assert response.status_code == 204, response.text
 
     swap_in_db = session.get(Swap, swap.id)
     assert swap_in_db is None
@@ -166,22 +168,3 @@ def test_delete_swap_not_exists(client: TestClient) -> None:
     response = client.delete(f"/swaps/{0}")
     assert response.status_code == 404, response.text
     
-
-def test_get_gamers_for_given_swap(swap: Swap, client: TestClient) -> None:
-    response = client.get(f"/swaps/{swap.id}/gamers")
-    data = response.json()
-
-    assert response.status_code == 200, response.text
-    assert len(data) == 2
-    assert data[0]["name"] == "Player One"
-    assert data[1]["name"] == "Player Two"
-
-
-def test_get_games_for_given_swap(swap: Swap, client: TestClient) -> None:
-    response = client.get(f"/swaps/{swap.id}/games")
-    data = response.json()
-
-    assert response.status_code == 200, response.text
-    assert len(data) == 2
-    assert data[0]["title"] == "Sonic The Hedgehog"
-    assert data[1]["title"] == "Super Mario Land"

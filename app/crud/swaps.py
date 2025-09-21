@@ -60,8 +60,7 @@ def create_swap(session: Session, params: SwapCreate) -> Swap:
     return swap
     
 
-def delete_swap(session: Session, swap_id: int) -> Swap:    
+def delete_swap(session: Session, swap_id: int) -> None:    
     swap = get_swap(session, swap_id)
     session.delete(swap)
     session.commit()
-    return swap

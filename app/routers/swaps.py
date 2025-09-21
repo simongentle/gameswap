@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 import app.crud.swaps as swaps
@@ -32,28 +32,10 @@ def get_swap(swap_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404) from exc
     
 
-@router.delete("/swaps/{swap_id}", response_model=Swap) 
+@router.delete("/swaps/{swap_id}", status_code=status.HTTP_204_NO_CONTENT) 
 def delete_swap(swap_id: int, session: Session = Depends(get_session)):
     try:
-        return swaps.delete_swap(session, swap_id)
+        swaps.delete_swap(session, swap_id)
     except swaps.SwapNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
-    
-
-@router.get("/swaps/{swap_id}/gamers", response_model=list[Gamer]) 
-def get_gamers_in_swap(swap_id: int, session: Session = Depends(get_session)):
-    try:
-        swap = swaps.get_swap(session, swap_id)
-    except swaps.SwapNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    return [swap.proposer, swap.acceptor]
-
-
-@router.get("/swaps/{swap_id}/games", response_model=list[Game]) 
-def get_games_in_swap(swap_id: int, session: Session = Depends(get_session)):
-    try:
-        swap = swaps.get_swap(session, swap_id)
-    except swaps.SwapNotFoundError as exc:
-        raise HTTPException(status_code=404) from exc
-    return swap.games
     
