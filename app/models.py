@@ -18,9 +18,8 @@ class Game(Base):
     swap_id: Mapped[int | None] = mapped_column(ForeignKey("swap.id", ondelete="SET NULL"))
     swap: Mapped["Swap | None"] = relationship(back_populates="games")
 
-    @classmethod
-    def is_available(cls) -> bool:
-        return cls.swap_id is not None
+    def is_available(self) -> bool:
+        return self.swap_id is None
 
 
 class Gamer(Base):

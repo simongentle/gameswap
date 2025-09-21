@@ -86,12 +86,6 @@ def test_get_games(session: Session, client: TestClient) -> None:
     assert response.status_code == 200, response.text
     assert len(data) == 3
 
-    response = client.get("/games?available=True")
-    data = response.json()
-
-    assert response.status_code == 200, response.text
-    assert len(data) == 3
-
 
 def test_update_game(session: Session, client: TestClient) -> None:
     gamer = Gamer(name="Player One", email="press@start.com")

@@ -1,4 +1,3 @@
-from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -50,9 +49,3 @@ def delete_game(session: Session, game_id: int) -> Game:
     session.delete(game)
     session.commit()
     return game
-
-
-def get_games_by_availability(session: Session, available: bool) -> list[Game]:
-    result = session.execute(select(Game).where(Game.is_available() == available))
-    games = result.scalars().all()
-    return games
