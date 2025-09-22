@@ -7,6 +7,7 @@ from fastapi import Depends
 
 class Event(StrEnum):
     GAMER_CREATED = "gamer_created"
+    SWAP_CREATED = "swap_created"
 
 
 @dataclass
@@ -43,9 +44,14 @@ def handle_create_gamer(notification: Notification) -> None:
     print(notification.message)
 
 
+def handle_create_swap(notification: Notification) -> None:
+    print(notification.message)
+
+
 def get_notification_service() -> NotificationService:
     service = NotificationService()
     service.subscribe(Event.GAMER_CREATED, handle_create_gamer)
+    service.subscribe(Event.SWAP_CREATED, handle_create_swap)
     return service
     
 

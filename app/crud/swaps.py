@@ -1,7 +1,8 @@
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.crud.gamers import GamerNotFoundError, get_gamer
 from app.crud.games import GameNotFoundError, get_game
+from app.dependencies.notifications import Event, Notification, NotificationService
 from app.models import Swap
 from app.schemas.swap import SwapCreate
 
@@ -26,37 +27,45 @@ def get_swaps(session: Session) -> list[Swap]:
     return swaps
     
 
-def create_swap(session: Session, params: SwapCreate) -> Swap:
-    # Construct swap without games unless proposer/acceptor does not exist:
-    swap = Swap(
-        proposer_id=params.proposer.id,
-        acceptor_id=params.acceptor.id,
-    )
-    session.add(swap)
+def create_swap(
+        session: Session, 
+        params: SwapCreate,
+        notification_service: NotificationService,
+    ) -> Swap:
+    # Load gamers for swap (and notification) unless proposer/acceptor does not exist
     try:
-        session.commit()
-    except IntegrityError as exc:
-        session.rollback()
-        raise InvalidSwapError(
-            f"Gamer {params.proposer.id} or {params.acceptor.id} not found."
-        ) from exc
+        proposer = get_gamer(session, params.proposer.id) 
+        acceptor = get_gamer(session, params.acceptor.id) 
+    except GamerNotFoundError as exc:
+        raise InvalidSwapError(str(exc)) from exc
     
-    # Load games for swap unless a game does not exist:
+    # Initialise swap
+    swap = Swap(proposer_id=params.proposer.id, acceptor_id=params.acceptor.id)
+    session.add(swap)
+    session.commit()
+    
+    # Load games for swap unless a game does not exist
     try:
         games = [get_game(session, game_id) 
                  for game_id in params.proposer.game_ids | params.acceptor.game_ids]
     except GameNotFoundError as exc:
         raise InvalidSwapError(str(exc)) from exc
     
-    # Assign games to swap unless validation rules broken:
+    # Assign games to swap unless validation rules broken
     try:
         for game in games:
             swap.games.append(game)
     except ValueError as exc:
         raise InvalidSwapError(str(exc)) from exc
-
     session.commit()
     session.refresh(swap)
+
+    notification_service.post(
+        Notification(
+            event=Event.SWAP_CREATED,
+            message=f"Swap created between {proposer.name} and {acceptor.name}!"
+        )
+    )
     return swap
     
 
