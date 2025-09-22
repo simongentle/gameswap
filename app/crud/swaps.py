@@ -1,6 +1,6 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.crud.gamers import GamerNotFoundError, get_gamer
 from app.crud.games import GameNotFoundError, get_game
 from app.dependencies.notifications import Event, Notification, NotificationService
 from app.models import Swap
@@ -32,17 +32,16 @@ def create_swap(
         params: SwapCreate,
         notification_service: NotificationService,
     ) -> Swap:
-    # Load gamers for swap (and notification) unless proposer/acceptor does not exist
-    try:
-        proposer = get_gamer(session, params.proposer.id) 
-        acceptor = get_gamer(session, params.acceptor.id) 
-    except GamerNotFoundError as exc:
-        raise InvalidSwapError(str(exc)) from exc
-    
-    # Initialise swap
+    # Initialise swap unless proposer/acceptor does not exist
     swap = Swap(proposer_id=params.proposer.id, acceptor_id=params.acceptor.id)
     session.add(swap)
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError as exc:
+        session.rollback()
+        raise InvalidSwapError(
+            f"Gamer {params.proposer.id} or {params.acceptor.id} not found."
+        ) from exc
     
     # Load games for swap unless a game does not exist
     try:
@@ -63,7 +62,7 @@ def create_swap(
     notification_service.post(
         Notification(
             event=Event.SWAP_CREATED,
-            message=f"Swap created between {proposer.name} and {acceptor.name}!"
+            message=f"Swap created between {swap.proposer.name} and {swap.acceptor.name}!"
         )
     )
     return swap
