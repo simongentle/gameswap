@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Game, Gamer
+from app.models import Game, Gamer, Swap
 
 
 def test_create_game(session: Session, client: TestClient) -> None:
@@ -23,7 +23,7 @@ def test_create_game(session: Session, client: TestClient) -> None:
         and data["title"] == game_data["title"]
         and data["platform"] == game_data["platform"]
         and data["gamer_id"] == game_data["gamer_id"]
-        and data["available"] == True
+        and data["swap_id"] is None
     )
 
 
@@ -60,7 +60,7 @@ def test_get_game(session: Session, client: TestClient) -> None:
         and data["title"] == game.title
         and data["platform"] == game.platform
         and data["gamer_id"] == game.gamer_id
-        and data["available"] == True
+        and data["swap_id"] is None
     )
 
 
@@ -69,15 +69,9 @@ def test_get_game_not_exists(client: TestClient) -> None:
     assert response.status_code == 404, response.text
 
 
-def test_get_games(session: Session, client: TestClient) -> None:
-    gamer = Gamer(name="Player One", email="press@start.com")
-    session.add(gamer)
-    session.commit()
-
-    game1 = Game(title="Sonic The Hedgehog", platform="SEGA Mega Drive", gamer_id=gamer.id)
-    game2 = Game(title="Super Mario Land", platform="Nintendo GAME BOY", gamer_id=gamer.id, available=False)
-    game3 = Game(title="Ristar", platform="SEGA Mega Drive", gamer_id=gamer.id, available=False)
-    session.add_all([game1, game2, game3])
+def test_get_games(swap: Swap, session: Session, client: TestClient) -> None:
+    new_game = Game(title="Ristar", platform="SEGA Mega Drive", gamer_id=swap.proposer.id)
+    session.add(new_game)
     session.commit()
 
     response = client.get("/games")
@@ -86,11 +80,12 @@ def test_get_games(session: Session, client: TestClient) -> None:
     assert response.status_code == 200, response.text
     assert len(data) == 3
 
-    response = client.get("/games?available=True")
+    response = client.get("/games?only_available=True")
     data = response.json()
 
     assert response.status_code == 200, response.text
     assert len(data) == 1
+    assert data[0]["swap_id"] is None
 
 
 def test_update_game(session: Session, client: TestClient) -> None:
@@ -102,15 +97,16 @@ def test_update_game(session: Session, client: TestClient) -> None:
     session.add(game)
     session.commit()
 
-    response = client.patch(f"/games/{game.id}", json={"available": False})
+    new_platform = "SEGA Master System"
+    response = client.patch(f"/games/{game.id}", json={"platform": new_platform})
     data = response.json()
     
     assert response.status_code == 200, response.text
     assert (
         data["id"] == game.id
         and data["title"] == game.title 
-        and data["platform"] == game.platform
-        and data["available"] == False
+        and data["platform"] == game.platform == new_platform
+        and data["swap_id"] is None
     )
 
 
@@ -124,7 +120,7 @@ def test_delete_game(session: Session, client: TestClient) -> None:
     session.commit()
 
     response = client.delete(f"/games/{game.id}")
-    assert response.status_code == 200, response.text
+    assert response.status_code == 204, response.text
 
     game_in_db = session.get(Game, game.id)
     assert game_in_db is None
@@ -133,4 +129,8 @@ def test_delete_game(session: Session, client: TestClient) -> None:
 def test_delete_game_not_exists(client: TestClient) -> None:
     response = client.delete(f"/games/{0}")
     assert response.status_code == 404, response.text
-    
+
+
+def test_cannot_delete_game_if_in_swap(swap: Swap, client: TestClient) -> None:
+    response = client.delete(f"/games/{swap.games[0].id}")
+    assert response.status_code == 422, response.text

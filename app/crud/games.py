@@ -11,6 +11,10 @@ class GameNotFoundError(Exception):
     pass
 
 
+class GameUnavailableError(Exception):
+    pass
+
+
 def get_game(session: Session, game_id: int) -> Game:
     game = session.get(Game, game_id)
     if game is None:
@@ -45,14 +49,15 @@ def update_game(session: Session, game_id: int, params: GameUpdate) -> Game:
     return game
 
 
-def delete_game(session: Session, game_id: int) -> Game:    
+def delete_game(session: Session, game_id: int) -> None:    
     game = get_game(session, game_id)
+    if not game.is_available():
+        raise GameUnavailableError(f"Game {game.id} is currently in a swap.")
     session.delete(game)
     session.commit()
-    return game
 
 
-def get_games_by_availability(session: Session, available: bool) -> list[Game]:
-    result = session.execute(select(Game).where(Game.available == available))
+def get_available_games(session: Session) -> list[Game]:
+    result = session.execute(select(Game).where(Game.swap_id == None))
     games = result.scalars().all()
     return games

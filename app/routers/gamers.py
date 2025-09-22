@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 
 import app.crud.gamers as gamers
 from app.dependencies.database import SessionDep
@@ -50,10 +50,10 @@ def update_gamer(gamer_id: int, params: GamerUpdate, session: SessionDep):
         raise HTTPException(status_code=422) from exc
     
 
-@router.delete("/gamers/{gamer_id}", response_model=Gamer) 
+@router.delete("/gamers/{gamer_id}", status_code=status.HTTP_204_NO_CONTENT) 
 def delete_gamer(gamer_id: int, session: SessionDep):
     try:
-        return gamers.delete_gamer(session, gamer_id)
+        gamers.delete_gamer(session, gamer_id)
     except gamers.GamerNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
     

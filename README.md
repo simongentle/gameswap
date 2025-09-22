@@ -1,6 +1,6 @@
 # gameswap
 
-API to swap games with friends
+API to track game swaps with friends
 
 ## Requirements
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 
 import app.crud.gamers as gamers
 import app.crud.games as games
@@ -18,9 +18,9 @@ def create_game(game: GameCreate, session: SessionDep):
 
 
 @router.get("/games", response_model=list[Game]) 
-def get_games(session: SessionDep, available: bool | None = None):
-    if available is not None:
-        return games.get_games_by_availability(session, available)
+def get_games(session: SessionDep, only_available: bool = False):
+    if only_available:
+        return games.get_available_games(session)
     return games.get_games(session)
 
 
@@ -40,9 +40,11 @@ def update_game(game_id: int, params: GameUpdate, session: SessionDep):
         raise HTTPException(status_code=404) from exc
     
 
-@router.delete("/games/{game_id}", response_model=Game) 
+@router.delete("/games/{game_id}", status_code=status.HTTP_204_NO_CONTENT) 
 def delete_game(game_id: int, session: SessionDep):
     try:
-        return games.delete_game(session, game_id)
+        games.delete_game(session, game_id)
     except games.GameNotFoundError as exc:
         raise HTTPException(status_code=404) from exc
+    except games.GameUnavailableError as exc:
+        raise HTTPException(status_code=422) from exc
